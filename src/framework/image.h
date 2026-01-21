@@ -64,8 +64,13 @@ public:
 
 	void Resize(unsigned int width, unsigned int height);
 	void Scale(unsigned int width, unsigned int height);
-	
-	void FlipY(); // Flip the image top-down
+
+	void DrawImage(const Image& source, int x, int y);
+	void DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c);
+	void DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor);
+	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor);
+	void ScanLineDDA(int x0, int y0, int x1, int y1, int* minX, int* maxX);
+	void FlipY(); // Flip the image upside-down
 
 	// Fill the image with the color C
 	void Fill(const Color& c) { for(unsigned int pos = 0; pos < width*height; ++pos) pixels[pos] = c; }

@@ -26,13 +26,55 @@ Application::~Application()
 void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
+    int x = 10;
+
+    all_buttons[0].Init("/images/pencil.png", Vector2((float)x, 5), BTN_PENCIL); x += 50;
+    all_buttons[1].Init("/images/eraser.png", Vector2((float)x, 5), BTN_ERASER); x += 50;
+    all_buttons[2].Init("/images/line.png", Vector2((float)x, 5), BTN_LINE); x += 50;
+    all_buttons[3].Init("/images/rectangle.png", Vector2((float)x, 5), BTN_RECT); x += 50;
+    all_buttons[4].Init("/images/triangle.png", Vector2((float)x, 5), BTN_TRIANGLE); x += 50;
+    all_buttons[5].Init("/images/clear.png", Vector2((float)x, 5), BTN_CLEAR); x += 50;
+    all_buttons[6].Init("/images/load.png", Vector2((float)x, 5), BTN_LOAD); x += 50;
+    all_buttons[7].Init("/images/save.png", Vector2((float)x, 5), BTN_SAVE); x += 50;
+    all_buttons[8].Init("/images/black.png", Vector2((float)x, 5), BTN_COLOR_BLACK); x += 50;
+    all_buttons[9].Init("/images/white.png", Vector2((float)x, 5), BTN_COLOR_WHITE); x += 50;
+    all_buttons[10].Init("/images/red.png", Vector2((float)x, 5), BTN_COLOR_RED); x += 50;
+    all_buttons[11].Init("/images/green.png", Vector2((float)x, 5), BTN_COLOR_GREEN); x += 50;
+    all_buttons[12].Init("/images/blue.png", Vector2((float)x, 5), BTN_COLOR_BLUE); x += 50;
+    all_buttons[13].Init("/images/yellow.png", Vector2((float)x, 5), BTN_COLOR_YELLOW); x += 50;
+    all_buttons[14].Init("/images/cyan.png", Vector2((float)x, 5), BTN_COLOR_CYAN); x += 50;
+    all_buttons[15].Init("/images/pink.png", Vector2((float)x, 5), BTN_COLOR_PINK); x += 50;
+
+	current_color = Color::WHITE;
+
+
 }
+
+
 
 // Render one frame
 void Application::Render(void)
 {
-	// ...
 
+    if (current_mode == PARTICLES_MODE) {
+        framebuffer.Fill(Color::BLACK);
+        p_system.Render(&framebuffer);
+    }
+
+	// Para el menú de botones
+
+    framebuffer.DrawRect(0, 0, window_width, 40, Color::GRAY, 0, true, Color::GRAY);
+    for (int i = 0; i < 16; ++i) {
+        framebuffer.DrawImage(all_buttons[i].image, all_buttons[i].position.x, all_buttons[i].position.y);
+    }
+
+    for (int i = 0; i < 16; ++i) {
+        framebuffer.DrawImage(
+            all_buttons[i].image,
+            (int)all_buttons[i].position.x,
+            (int)all_buttons[i].position.y
+        );
+    }
 	framebuffer.Render();
 }
 
@@ -40,33 +82,187 @@ void Application::Render(void)
 void Application::Update(float seconds_elapsed)
 {
 
-}
+    if (current_mode == PARTICLES_MODE) {
+        p_system.Update(seconds_elapsed);
+    }
 
-//keyboard press event 
+}
 void Application::OnKeyPressed( SDL_KeyboardEvent event )
 {
 	// KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
-	switch(event.keysym.sym) {
-		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
-	}
+    switch (event.keysym.sym) {
+    case SDLK_ESCAPE: exit(0); break;
+
+    case SDLK_1: // geometry mode
+        current_mode = PAINT;
+        current_task = LINE; 
+        framebuffer.Fill(Color::BLACK);
+        break;
+
+    case SDLK_2: // particle mode
+        current_mode = PARTICLES_MODE;
+        p_system.Init();
+        break;
+
+    case SDLK_l: if (current_mode == PAINT) current_task = LINE; break;
+    case SDLK_r: if (current_mode == PAINT) current_task = RECT; break;
+    case SDLK_t: if (current_mode == PAINT) current_task = TRIANGLE; break;
+    case SDLK_p: if (current_mode == PAINT) current_task = PAINT_MODE; break;
+
+    case SDLK_PLUS:
+    case SDLK_KP_PLUS: 
+        borderWidth++;
+        break;
+
+    case SDLK_MINUS:
+    case SDLK_KP_MINUS: 
+        if (borderWidth > 1) {
+            borderWidth--;
+        }
+        
+        break;
+
+    case SDLK_c: framebuffer.Fill(Color::BLACK); break;
+    }
+
 }
 
 void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 {
-	if (event.button == SDL_BUTTON_LEFT) {
+    if (event.button != SDL_BUTTON_LEFT) return;
 
-	}
+    int current_y = window_height - event.y;
+
+    // Zona de botones
+    for (int i = 0; i < 16; ++i)
+    {
+        if (all_buttons[i].IsMouseInside(Vector2(event.x, current_y)))
+        {
+            switch (all_buttons[i].type)
+            {
+            case BTN_PENCIL:   current_mode = PAINT; current_task = PAINT_MODE; break;
+            case BTN_ERASER:   current_mode = PAINT; current_task = ERASER; break;
+            case BTN_LINE:     current_mode = PAINT; current_task = LINE; break;
+            case BTN_RECT:     current_mode = PAINT; current_task = RECT; break;
+            case BTN_TRIANGLE: current_mode = PAINT; current_task = TRIANGLE; break;
+            case BTN_CLEAR:    framebuffer.Fill(Color::BLACK); break;
+            case BTN_LOAD:     framebuffer.LoadTGA("output.tga", true); break;
+            case BTN_SAVE:     framebuffer.SaveTGA("output.tga"); break;
+
+            case BTN_COLOR_BLACK:  current_color = Color::BLACK; break;
+            case BTN_COLOR_WHITE:  current_color = Color::WHITE; break;
+            case BTN_COLOR_RED:    current_color = Color::RED; break;
+            case BTN_COLOR_GREEN:  current_color = Color::GREEN; break;
+            case BTN_COLOR_BLUE:   current_color = Color::BLUE; break;
+            case BTN_COLOR_YELLOW: current_color = Color::YELLOW; break;
+            case BTN_COLOR_CYAN:   current_color = Color::CYAN; break;
+            case BTN_COLOR_PINK:   current_color = Color::PURPLE; break;
+            }
+
+            return; 
+        }
+    }
+    Vector2 mouse_pos((float)event.x, (float)current_y);
+    if (current_y < 40) return;
+    switch (current_task)
+    {
+    case LINE:
+        if (!is_second_click) {
+            start_x = event.x;
+            start_y = current_y;
+            is_second_click = true;
+        }
+        else {
+            framebuffer.DrawLineDDA(start_x, start_y, event.x, current_y, current_color);
+            is_second_click = false;
+        }
+        break;
+
+    case RECT:
+        if (!is_second_click) {
+            start_x = event.x;
+            start_y = current_y;
+            is_second_click = true;
+        }
+        else {
+            int x = std::min(start_x, (int)event.x);
+            int y = std::min(start_y, current_y);
+            int w = std::abs((int)event.x - start_x);
+            int h = std::abs(current_y - start_y);
+            framebuffer.DrawRect(x, y, w, h, current_color, borderWidth, false, current_color);
+            is_second_click = false;
+        }
+        break;
+
+    case TRIANGLE:
+        // para que el triángulo use su propio contador de clics
+
+        triangle_points[triangle_click_counter] = mouse_pos;
+        triangle_click_counter++;
+
+        if (triangle_click_counter == 3) {
+            framebuffer.DrawTriangle(triangle_points[0], triangle_points[1], triangle_points[2],current_color, false, current_color);
+            triangle_click_counter = 0; 
+        }
+        break;
+
+    case ERASER:
+    {
+        is_painting = true;
+        last_mouse_x = event.x;
+        last_mouse_y = current_y;
+
+        int grosor = 10;
+
+        for (int i = -grosor; i <= grosor; i++)
+        {
+            framebuffer.DrawLineDDA(
+                last_mouse_x + i, last_mouse_y,
+                event.x + i, current_y,
+                Color::BLACK
+            );
+        }
+    }
+    break;
+
+
+
+    case PAINT_MODE:
+        
+        is_painting = true;
+        last_mouse_x = event.x;
+        last_mouse_y = current_y;
+        framebuffer.SetPixel(event.x, current_y, current_color);
+        break;
+
+    }
 }
 
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
 	if (event.button == SDL_BUTTON_LEFT) {
-
+        is_painting = false;
 	}
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
+    if ((current_task == PAINT_MODE) && is_painting) {
+        int current_y = window_height - event.y;
+        framebuffer.DrawLineDDA(last_mouse_x, last_mouse_y, event.x, current_y,  current_color);
+    }
+    else if (current_task == ERASER && is_painting) {
+        int current_y = window_height - event.y;
+
+        int grosor = 10;
+        for (int i = -grosor; i <= grosor; i++)
+        {
+            framebuffer.DrawLineDDA(last_mouse_x + i, last_mouse_y,event.x + i, current_y, Color::BLACK);
+        }
+
+    }
+    last_mouse_x = event.x;
+    last_mouse_y = window_height - event.y;
 	
 }
 
@@ -80,4 +276,44 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 void Application::OnFileChanged(const char* filename)
 { 
 	Shader::ReloadSingleShader(filename);
+}
+
+void ParticleSystem::Init() {
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        particles[i].position = Vector2((float)(rand() % 1300), (float)(rand() % 1200));
+        particles[i].velocity = Vector2(0, (float)((rand() % 100) * -1));
+        particles[i].color = Color::WHITE;
+        particles[i].acceleration = 9.8f;
+        particles[i].ttl = (rand() % 300) / 100.0f + 1.0f;
+        particles[i].inactive = false;
+    }
+}
+
+void ParticleSystem::Update(float dt) {
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        if (particles[i].inactive) {
+            particles[i].position = Vector2((float)(rand() % 1200), (float)(rand() % 1200));
+            particles[i].velocity = Vector2(0, (float)((rand() % 100) * -1));
+            particles[i].ttl = (rand() % 300);
+            particles[i].inactive = false;
+            continue;
+        }
+
+        particles[i].position.x += particles[i].velocity.x * dt;
+        particles[i].position.y += particles[i].velocity.y * dt;
+
+        particles[i].ttl -= dt;
+
+        if (particles[i].ttl <= 0) {
+            particles[i].inactive = true;
+        }
+    }
+}
+
+void ParticleSystem::Render(Image* framebuffer) {
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        if (!particles[i].inactive) {
+            framebuffer->SetPixel((int)particles[i].position.x, (int)particles[i].position.y, particles[i].color);
+        }
+    }
 }

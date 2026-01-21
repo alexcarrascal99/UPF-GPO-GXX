@@ -98,6 +98,122 @@ void Image::Scale(unsigned int width, unsigned int height)
 	pixels = new_pixels;
 }
 
+void Image::DrawImage(const Image& source, int x, int y) {
+	for (unsigned int i = 0; i < source.width; ++i) {
+		for (unsigned int j = 0; j < source.height; ++j) {
+			int destX = x + i;
+			int destY = y + j;
+
+			if (destX >= 0 && destX < (int)this->width && destY >= 0 && destY < (int)this->height) {
+				Color c = source.GetPixel(i, j);
+				this->SetPixel(destX, destY, c);
+			}
+		}
+	}
+}
+
+
+void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
+
+{
+	float dx = (float)(x1) - (float)(x0);
+	float dy = (float)(y1) - (float)(y0);
+
+	float steps = std::max(std::abs(dx), std::abs(dy));
+
+	if (steps == 0) {
+		SetPixel(x0, y0, c);
+	}
+
+	float xIncrement = dx / steps;
+	float yIncrement = dy / steps;
+
+	float x = (float)x0;
+	float y = (float)y0; 
+
+	int i_steps = (int)steps;
+
+	for (int i = 0; i <= i_steps; i++) {
+		SetPixel((int)floor(x + 0.5f), (int)floor(y + 0.5f), c);
+
+		x += xIncrement;
+		y += yIncrement;
+	}
+
+}
+
+void Image::DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor)
+
+{
+	for (int j = 0; j < h; j++) {
+		for (int i = 0; i < w; i++) {
+			int currentX = x + i;
+			int currentY = y + j;
+
+			bool isBorder = (i < borderWidth || i >= w - borderWidth ||
+				j < borderWidth || j >= h - borderWidth);
+
+			if (isBorder) {
+				SetPixel(currentX, currentY, borderColor);
+			}
+
+			else if (isFilled) {
+				SetPixel(currentX, currentY, fillColor);
+			}
+		}
+	}
+}
+
+void Image::ScanLineDDA(int x0, int y0, int x1, int y1, int* minX, int* maxX) {
+
+	float dx = (float)x1 - (float)x0;
+	float dy = (float)y1 - (float)y0;
+	float steps = std::max(std::abs(dx), std::abs(dy));
+
+	if (steps == 0) return;
+
+	float xIncrement = dx / steps;
+	float yIncrement = dy / steps;
+	float x = (float)x0;
+	float y = (float)y0;
+
+	for (int i = 0; i <= (int)steps; i++) {
+		int iy = (int)floor(y + 0.5f);
+		int ix = (int)floor(x + 0.5f);
+
+		if (iy >= 0 && iy < (int)this->height) {
+			if (ix < minX[iy]) minX[iy] = ix;
+			if (ix > maxX[iy]) maxX[iy] = ix;
+		}
+
+		x += xIncrement;
+		y += yIncrement;
+	}
+}
+
+void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor) {
+	
+	int* minX = new int[this->height];
+	int* maxX = new int[this->height];
+
+	
+	for (unsigned int i = 0; i < this->height; i++) {
+		minX[i] = (int)this->width;
+		maxX[i] = -1;
+	}
+
+	ScanLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, minX, maxX);
+	ScanLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, minX, maxX);
+	ScanLineDDA((int)p2.x, (int)p2.y, (int)p0.x, (int)p0.y, minX, maxX);
+
+	DrawLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, borderColor);
+	DrawLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, borderColor);
+	DrawLineDDA((int)p2.x, (int)p2.y, (int)p0.x, (int)p0.y, borderColor);
+
+	delete[] minX;
+	delete[] maxX;
+}
+
 Image Image::GetArea(unsigned int start_x, unsigned int start_y, unsigned int width, unsigned int height)
 {
 	Image result(width, height);

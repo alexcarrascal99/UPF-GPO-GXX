@@ -7,6 +7,25 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
+#include "button.h"
+
+class ParticleSystem {
+public:
+	static const int MAX_PARTICLES = 500;
+	struct Particle {
+		Vector2 position;
+		Vector2 velocity;
+		Color color;
+		float acceleration;
+		float ttl;
+		bool inactive;
+	};
+
+	Particle particles[MAX_PARTICLES];
+	void Init();
+	void Update(float dt);
+	void Render(Image* framebuffer);
+};
 
 class Application
 {
@@ -25,6 +44,39 @@ public:
 	int mouse_state; // Tells which buttons are pressed
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
+
+	enum Task {
+		PAINT_MODE,
+		COLOR_PICKER,
+		ERASER,
+		TRIANGLE,
+		LINE,
+		RECT
+	};
+
+
+	enum appMode {
+		PAINT,
+		PARTICLES_MODE
+	};
+
+	appMode current_mode = PAINT;
+	Task current_task = LINE;
+
+	Color current_color = Color::WHITE;
+	int start_x;
+	int start_y;
+	bool is_second_click = false;
+	bool is_painting = false;
+	int last_mouse_x = 0;
+	int last_mouse_y = 0;
+	int borderWidth = 7;
+
+	Button all_buttons[16];
+	Vector2 triangle_points[3];
+	int triangle_click_counter = 0;
+
+	ParticleSystem p_system;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
