@@ -108,6 +108,7 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
     case SDLK_r: if (current_mode == PAINT) current_task = RECT; break;
     case SDLK_t: if (current_mode == PAINT) current_task = TRIANGLE; break;
     case SDLK_p: if (current_mode == PAINT) current_task = PAINT_MODE; break;
+	case SDLK_f: fill_shapes = !fill_shapes; break;
 
     case SDLK_PLUS:
     case SDLK_KP_PLUS: 
@@ -189,7 +190,7 @@ void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
             int y = std::min(start_y, current_y);
             int w = std::abs((int)event.x - start_x);
             int h = std::abs(current_y - start_y);
-            framebuffer.DrawRect(x, y, w, h, current_color, borderWidth, false, current_color);
+            framebuffer.DrawRect(x, y, w, h, current_color, borderWidth, fill_shapes, current_color);
             is_second_click = false;
         }
         break;
@@ -201,7 +202,7 @@ void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
         triangle_click_counter++;
 
         if (triangle_click_counter == 3) {
-            framebuffer.DrawTriangle(triangle_points[0], triangle_points[1], triangle_points[2],current_color, false, current_color);
+            framebuffer.DrawTriangle(triangle_points[0], triangle_points[1], triangle_points[2],current_color, fill_shapes, Color::WHITE);
             triangle_click_counter = 0; 
         }
         break;

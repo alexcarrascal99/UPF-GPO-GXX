@@ -164,55 +164,66 @@ void Image::DrawRect(int x, int y, int w, int h, const Color& borderColor, int b
 	}
 }
 
-void Image::ScanLineDDA(int x0, int y0, int x1, int y1, int* minX, int* maxX) {
+void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table) {
 
 	float dx = (float)x1 - (float)x0;
 	float dy = (float)y1 - (float)y0;
-	float steps = std::max(std::abs(dx), std::abs(dy));
+	float d = std::max(std::abs(dx), std::abs(dy));
 
-	if (steps == 0) return;
-
-	float xIncrement = dx / steps;
-	float yIncrement = dy / steps;
+	float vx = dx / (float)d;
+	float vy = dy / (float)d;
 	float x = (float)x0;
 	float y = (float)y0;
 
-	for (int i = 0; i <= (int)steps; i++) {
-		int iy = (int)floor(y + 0.5f);
-		int ix = (int)floor(x + 0.5f);
+	for (int i = 0; i <= (int)d; i++) {
+		int ix = (int)floor(round(x));
+		int iy = (int)floor(round(y));
 
-		if (iy >= 0 && iy < (int)this->height) {
-			if (ix < minX[iy]) minX[iy] = ix;
-			if (ix > maxX[iy]) maxX[iy] = ix;
+		if (iy < (int)(table.size())) {
+			table[iy].minX = std::min(table[iy].minX, ix);
+			table[iy].maxX = std::max(table[iy].maxX, ix);
 		}
-
-		x += xIncrement;
-		y += yIncrement;
+		x += vx;
+		y += vy;
 	}
 }
 
 void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor) {
 	
-	int* minX = new int[this->height];
-	int* maxX = new int[this->height];
+	int minY = (std::min({ p0.y, p1.y, p2.y }));
+	int maxY = (std::max({ p0.y, p1.y, p2.y }));
+
+	std::vector<Cell> AET(maxY + 1);
 
 	
-	for (unsigned int i = 0; i < this->height; i++) {
-		minX[i] = (int)this->width;
-		maxX[i] = -1;
+	ScanLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, AET);
+	ScanLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, AET);
+	ScanLineDDA((int)p2.x, (int)p2.y, (int)p0.x, (int)p0.y, AET);
+
+
+	for (int i = -4; i <= 4; ++i) {
+		DrawLineDDA((int)p0.x + i, (int)p0.y, (int)p1.x + i, (int)p1.y, borderColor);
+		DrawLineDDA((int)p1.x + i, (int)p1.y, (int)p2.x + i, (int)p2.y, borderColor);
+		DrawLineDDA((int)p2.x + i, (int)p2.y, (int)p0.x + i, (int)p0.y, borderColor);
+
+		DrawLineDDA((int)p0.x, (int)p0.y + i, (int)p1.x, (int)p1.y + i, borderColor);
+		DrawLineDDA((int)p1.x, (int)p1.y + i, (int)p2.x, (int)p2.y + i, borderColor);
+		DrawLineDDA((int)p2.x, (int)p2.y + i, (int)p0.x, (int)p0.y + i, borderColor);
 	}
 
-	ScanLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, minX, maxX);
-	ScanLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, minX, maxX);
-	ScanLineDDA((int)p2.x, (int)p2.y, (int)p0.x, (int)p0.y, minX, maxX);
 
-	DrawLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, borderColor);
-	DrawLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, borderColor);
-	DrawLineDDA((int)p2.x, (int)p2.y, (int)p0.x, (int)p0.y, borderColor);
-
-	delete[] minX;
-	delete[] maxX;
+	if (isFilled) {
+		for (int y = minY; y <= maxY; ++y) {
+			int iy = y;
+			if (iy >= 0 && iy < (int)(AET.size())) {
+				for (int x = AET[iy].minX; x <= AET[iy].maxX; ++x) {
+					SetPixel(x, y, fillColor);
+				}
+			}
+		}
+	}
 }
+
 
 Image Image::GetArea(unsigned int start_x, unsigned int start_y, unsigned int width, unsigned int height)
 {

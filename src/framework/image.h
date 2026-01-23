@@ -31,6 +31,12 @@ class Image
 		unsigned char* data; // Bytes with the pixel information
 	} TGAInfo;
 
+	typedef struct Cell {
+		int minX; 
+		int maxX;
+		Cell() : minX(INT_MAX), maxX(INT_MIN) {}
+	} Cell;
+
 public:
 	unsigned int width;
 	unsigned int height;
@@ -69,7 +75,7 @@ public:
 	void DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c);
 	void DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor);
 	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor);
-	void ScanLineDDA(int x0, int y0, int x1, int y1, int* minX, int* maxX);
+	void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
 	void FlipY(); // Flip the image upside-down
 
 	// Fill the image with the color C
