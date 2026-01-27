@@ -45,6 +45,7 @@ void Application::Init(void)
     all_buttons[14].Init("/images/cyan.png", Vector2((float)x, 5), BTN_COLOR_CYAN); x += 50;
     all_buttons[15].Init("/images/pink.png", Vector2((float)x, 5), BTN_COLOR_PINK); x += 50;
 
+	camera = Camera();
 	current_color = Color::WHITE;
 
 
@@ -75,7 +76,9 @@ void Application::Render(void)
             (int)all_buttons[i].position.y
         );
     }
+
 	entity.Render(&framebuffer, &camera, Color::WHITE);
+
 	framebuffer.Render();
 }
 
