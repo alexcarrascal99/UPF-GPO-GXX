@@ -37,6 +37,7 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
 		framebuffer->DrawLineDDA(v0_2d.x, v0_2d.y, v1_2d.x, v1_2d.y, c);
 		framebuffer->DrawLineDDA(v1_2d.x, v1_2d.y, v2_2d.x, v2_2d.y, c);
 
+
 	}
 }
 
