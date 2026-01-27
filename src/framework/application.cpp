@@ -75,6 +75,7 @@ void Application::Render(void)
             (int)all_buttons[i].position.y
         );
     }
+	entity.Render(&framebuffer, &camera, Color::WHITE);
 	framebuffer.Render();
 }
 

@@ -8,6 +8,7 @@
 #include "framework.h"
 #include "image.h"
 #include "button.h"
+#include "entity.h"
 
 class ParticleSystem {
 public:
@@ -75,7 +76,8 @@ public:
 	Button all_buttons[16];
 	Vector2 triangle_points[3];
 	int triangle_click_counter = 0;
-
+	Entity entity;
+	Camera camera;
 	ParticleSystem p_system;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
