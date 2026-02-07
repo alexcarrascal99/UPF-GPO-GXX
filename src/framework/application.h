@@ -76,9 +76,9 @@ public:
 	Button all_buttons[16];
 	Vector2 triangle_points[3];
 	int triangle_click_counter = 0;
-	Entity entity;
-	Camera camera;
-	ParticleSystem p_system;
+	Entity* entity[3];
+	Camera* camera;
+	ParticleSystem* p_system;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);

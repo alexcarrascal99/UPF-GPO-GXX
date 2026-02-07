@@ -26,26 +26,19 @@ Application::~Application()
 void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
-    int x = 10;
 
-    all_buttons[0].Init("/images/pencil.png", Vector2((float)x, 5), BTN_PENCIL); x += 50;
-    all_buttons[1].Init("/images/eraser.png", Vector2((float)x, 5), BTN_ERASER); x += 50;
-    all_buttons[2].Init("/images/line.png", Vector2((float)x, 5), BTN_LINE); x += 50;
-    all_buttons[3].Init("/images/rectangle.png", Vector2((float)x, 5), BTN_RECT); x += 50;
-    all_buttons[4].Init("/images/triangle.png", Vector2((float)x, 5), BTN_TRIANGLE); x += 50;
-    all_buttons[5].Init("/images/clear.png", Vector2((float)x, 5), BTN_CLEAR); x += 50;
-    all_buttons[6].Init("/images/load.png", Vector2((float)x, 5), BTN_LOAD); x += 50;
-    all_buttons[7].Init("/images/save.png", Vector2((float)x, 5), BTN_SAVE); x += 50;
-    all_buttons[8].Init("/images/black.png", Vector2((float)x, 5), BTN_COLOR_BLACK); x += 50;
-    all_buttons[9].Init("/images/white.png", Vector2((float)x, 5), BTN_COLOR_WHITE); x += 50;
-    all_buttons[10].Init("/images/red.png", Vector2((float)x, 5), BTN_COLOR_RED); x += 50;
-    all_buttons[11].Init("/images/green.png", Vector2((float)x, 5), BTN_COLOR_GREEN); x += 50;
-    all_buttons[12].Init("/images/blue.png", Vector2((float)x, 5), BTN_COLOR_BLUE); x += 50;
-    all_buttons[13].Init("/images/yellow.png", Vector2((float)x, 5), BTN_COLOR_YELLOW); x += 50;
-    all_buttons[14].Init("/images/cyan.png", Vector2((float)x, 5), BTN_COLOR_CYAN); x += 50;
-    all_buttons[15].Init("/images/pink.png", Vector2((float)x, 5), BTN_COLOR_PINK); x += 50;
 
-	camera = Camera();
+
+	camera = new Camera();
+
+
+    for (int i = 0; i < 3; i++) {
+		entity[i] = new Entity();
+    }
+    entity[0]->Translate(-0.5, 0, 2);
+    entity[2]->Translate(-0.5, 0, 2);
+
+    
 	current_color = Color::WHITE;
 
 
@@ -56,28 +49,19 @@ void Application::Init(void)
 // Render one frame
 void Application::Render(void)
 {
-
+	framebuffer.Fill(Color::BLACK);
     if (current_mode == PARTICLES_MODE) {
         framebuffer.Fill(Color::BLACK);
-        p_system.Render(&framebuffer);
+        p_system->Render(&framebuffer);
     }
 
-	// Para el menú de botones
+	entity[0]->Render(&framebuffer, camera, Color::WHITE);
+	entity[1]->Render(&framebuffer, camera, Color::RED);
+	entity[2]->Render(&framebuffer, camera, Color::BLUE);
 
-    framebuffer.DrawRect(0, 0, window_width, 40, Color::GRAY, 0, true, Color::GRAY);
-    for (int i = 0; i < 16; ++i) {
-        framebuffer.DrawImage(all_buttons[i].image, all_buttons[i].position.x, all_buttons[i].position.y);
-    }
-
-    for (int i = 0; i < 16; ++i) {
-        framebuffer.DrawImage(
-            all_buttons[i].image,
-            (int)all_buttons[i].position.x,
-            (int)all_buttons[i].position.y
-        );
-    }
-
-	entity.Render(&framebuffer, &camera, Color::WHITE);
+	entity[0]->mode = Entity::ROTATE;
+	entity[1]->mode = Entity::TRANSLATE;
+	entity[2]->mode = Entity::SCALE;
 
 	framebuffer.Render();
 }
@@ -85,10 +69,12 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
+    // mode 1: rota, mode 2: trasllada,
+	for (int i = 0; i < 3; i++) {
+		entity[i]->Update(seconds_elapsed);
+	}
 
-    if (current_mode == PARTICLES_MODE) {
-        p_system.Update(seconds_elapsed);
-    }
+
 
 }
 void Application::OnKeyPressed( SDL_KeyboardEvent event )
@@ -105,7 +91,7 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 
     case SDLK_2: // particle mode
         current_mode = PARTICLES_MODE;
-        p_system.Init();
+        p_system->Init();
         break;
 
     case SDLK_l: if (current_mode == PAINT) current_task = LINE; break;
