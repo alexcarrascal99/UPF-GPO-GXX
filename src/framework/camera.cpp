@@ -6,7 +6,7 @@
 Camera::Camera()
 {
 	view_matrix.SetIdentity();
-	SetOrthographic(-1,1,1,-1,-1,1);
+	SetOrthographic(-1, 1, 1, -1, -1, 1);
 }
 
 Vector3 Camera::GetLocalVector(const Vector3& v)
@@ -90,8 +90,8 @@ void Camera::UpdateViewMatrix()
 	// Comment this line to create your own projection matrix!
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	// Careful with the order of matrix multiplications, and be sure to use normalized vectors!
-	
-	
+
+
 	// Create the view matrix rotation
 	//
 	Vector3 forward = (center - eye).Normalize(); // De centro a ojo
@@ -101,7 +101,7 @@ void Camera::UpdateViewMatrix()
 
 	// Como ViewMatrix = R transpuesta * T transpuesta. Primero hacemos la matriz de rotación (R transpuesta)
 	Matrix44 rotation;
-	rotation.SetIdentity();	
+	rotation.SetIdentity();
 	rotation.M[0][0] = side.x;
 	rotation.M[0][1] = side.y;
 	rotation.M[0][2] = side.z;
@@ -116,16 +116,14 @@ void Camera::UpdateViewMatrix()
 
 	rotation.M[3][3] = 1;
 
-
-	
 	// Luego hacemos la matriz de traslacion, entonces solo es multiplicar R-1*T-1 para tener la ViewMatrix
 	Matrix44 translation;
 	translation.SetIdentity();
 	translation.M[3][0] = -eye.x;
 	translation.M[3][1] = -eye.y;
 	translation.M[3][2] = -eye.z;
+
 	view_matrix = rotation * translation;
-		
 	UpdateViewProjectionMatrix();
 }
 
@@ -139,9 +137,9 @@ void Camera::UpdateProjectionMatrix()
 	//SetExampleProjectionMatrix();
 
 	// Remember how to fill a Matrix4x4 (check framework slides)
-	
+
 	if (type == PERSPECTIVE) {
-		int f = 1 / tan(fov * 0.5 * DEG2RAD);
+		float f = 1.0f / tan(fov * 0.5f * DEG2RAD);
 		projection_matrix.M[0][0] = f / aspect;
 		projection_matrix.M[1][1] = f;
 		projection_matrix.M[2][2] = (far_plane + near_plane) / (near_plane - far_plane);
@@ -160,7 +158,7 @@ void Camera::UpdateProjectionMatrix()
 		projection_matrix.M[3][3] = 1;
 
 		// ...
-	} 
+	}
 
 	UpdateViewProjectionMatrix();
 }
@@ -186,7 +184,7 @@ void Camera::SetExampleViewMatrix()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, up.x, up.y, up.z);
-	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix.m );
+	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix.m);
 }
 
 void Camera::SetExampleProjectionMatrix()
@@ -197,8 +195,8 @@ void Camera::SetExampleProjectionMatrix()
 	if (type == PERSPECTIVE)
 		gluPerspective(fov, aspect, near_plane, far_plane);
 	else
-		glOrtho(left,right,bottom,top,near_plane,far_plane);
+		glOrtho(left, right, bottom, top, near_plane, far_plane);
 
-	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix.m );
+	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix.m);
 	glMatrixMode(GL_MODELVIEW);
 }

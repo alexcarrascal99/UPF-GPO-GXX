@@ -75,6 +75,7 @@ public:
 	void DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c);
 	void DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor);
 	void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor);
+	void DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2);
 	void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
 	void FlipY(); // Flip the image upside-down
 
@@ -103,6 +104,15 @@ public:
 		return *this;
 	}
 	#endif
+
+
+	struct sTriangleInfo{
+		Vector3 p0, p1, p2;
+		Color c0, c1, c2;
+		Vector2 uv0, uv1, uv2;
+		Image* texture;
+
+	};
 };
 
 // Image storing one float per pixel instead of a 3 or 4 component Color

@@ -6,18 +6,20 @@ Entity::Entity() {
 	mode = NORMAL;
 	modelMatrix.SetIdentity();
 }
-	
 
-void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
-	for(int i = 0; i < mesh->GetVertices().size(); i+=3){
+
+void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
+	for (int i = 0; i < mesh->GetVertices().size(); i += 3) {
 		Vector3 v0 = mesh->GetVertices()[i];
 		Vector3 v1 = mesh->GetVertices()[i + 1];
 		Vector3 v2 = mesh->GetVertices()[i + 2];
 
 		// De local a espacio del mundo 
-		v0 = modelMatrix * v0; 
-		v1 = modelMatrix * v1; 
+		v0 = modelMatrix * v0;
+		v1 = modelMatrix * v1;
 		v2 = modelMatrix * v2;
+
+
 		// Del espacio al mundo al espacio de la camara 
 		v0 = camera->ProjectVector(v0);
 		v1 = camera->ProjectVector(v1);
@@ -26,24 +28,38 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
 
 		// De espacio de la camara a espacio de pantalla
 		v0.x = (v0.x + 1) * 0.5f * framebuffer->width;
-		v0.y = ((v0.y + 1) * 0.5f) * framebuffer->height;
-
+		v0.y = (1.0f - (v0.y + 1) * 0.5f) * framebuffer->height;
 		v1.x = (v1.x + 1) * 0.5f * framebuffer->width;
-		v1.y = ( (v1.y + 1) * 0.5f) * framebuffer->height;
+		v1.y = (1.0f - (v1.y + 1) * 0.5f) * framebuffer->height;
 		v2.x = (v2.x + 1) * 0.5f * framebuffer->width;
-		v2.y = ((v2.y + 1) * 0.5f) * framebuffer->height;
+		v2.y = (1.0f - (v2.y + 1) * 0.5f) * framebuffer->height;
 
 
-		framebuffer->DrawLineDDA(v0.x, v0.y, v1.x, v1.y, c);
-		framebuffer->DrawLineDDA(v1.x, v1.y, v2.x, v2.y, c);
-		framebuffer->DrawLineDDA(v2.x, v2.y, v0.x, v0.y, c);
+		if (this->render_mode == WIREFRAME) {
+			framebuffer->DrawLineDDA(v0.x, v0.y, v1.x, v1.y, Color::WHITE);
+			framebuffer->DrawLineDDA(v1.x, v1.y, v2.x, v2.y, Color::WHITE);
+			framebuffer->DrawLineDDA(v2.x, v2.y, v0.x, v0.y, Color::WHITE);
+		}
 
+		else if (this->render_mode == POINTCLOUD) {
+			framebuffer->SetPixel((unsigned int)v0.x, (unsigned int)v0.y, Color::WHITE);
+			framebuffer->SetPixel((unsigned int)v1.x, (unsigned int)v1.y, Color::WHITE);
+			framebuffer->SetPixel((unsigned int)v2.x, (unsigned int)v2.y, Color::WHITE);
+				
+		}
 
+		else if (this->render_mode == TRIANGLES) {
+			Vector2 p0(v0.x, v0.y);
+			Vector2 p1(v1.x, v1.y);
+			Vector2 p2(v2.x, v2.y);
+			framebuffer->DrawTriangle(p0, p1, p2, Color::WHITE, true, Color::WHITE);
+		}
 
-
+		else if (this->render_mode == TRIANGLES_INTERPOLATED) {
+			framebuffer->DrawTriangleInterpolated(v0, v1, v2, Color::RED, Color::GREEN, Color::BLUE);
+		}
 	}
 }
-
 
 void Entity::Translate(float x, float y, float z)
 {

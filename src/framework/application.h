@@ -1,4 +1,4 @@
-/*  
+/*
 	+ This class encapsulates the application, is in charge of creating the data, getting the user input, process the update and render.
 */
 
@@ -46,23 +46,25 @@ public:
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
 	bool fill_shapes = false;
-	enum Task {
-		PAINT_MODE,
-		COLOR_PICKER,
-		ERASER,
-		TRIANGLE,
-		LINE,
-		RECT
+	enum scene {
+		START_SCREEN,
+		SINGLE_ENTITY,
+		MULTIPLE_ENTITIES
+	};
+
+	enum property {
+		CAM_NEAR,
+		CAM_FAR,
+		FOV
 	};
 
 
-	enum appMode {
-		PAINT,
-		PARTICLES_MODE
-	};
 
-	appMode current_mode = PAINT;
-	Task current_task = LINE;
+	property current_property = CAM_NEAR;
+	scene current_scene = START_SCREEN;
+	
+
+	FloatImage z_buffer;
 
 	Color current_color = Color::WHITE;
 	int start_x;
@@ -78,7 +80,6 @@ public:
 	int triangle_click_counter = 0;
 	Entity* entity[3];
 	Camera* camera;
-	ParticleSystem* p_system;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
@@ -94,13 +95,13 @@ public:
 	Application(const char* caption, int width, int height);
 	~Application();
 
-	void Init( void );
-	void Render( void );
-	void Update( float dt );
+	void Init(void);
+	void Render(void);
+	void Update(float dt);
 
 	// Other methods to control the app
 	void SetWindowSize(int width, int height) {
-		glViewport( 0,0, width, height );
+		glViewport(0, 0, width, height);
 		this->window_width = width;
 		this->window_height = height;
 		this->framebuffer.Resize(width, height);
@@ -108,8 +109,8 @@ public:
 
 	Vector2 GetWindowSize()
 	{
-		int w,h;
-		SDL_GetWindowSize(window,&w,&h);
+		int w, h;
+		SDL_GetWindowSize(window, &w, &h);
 		return Vector2(float(w), float(h));
 	}
 };
