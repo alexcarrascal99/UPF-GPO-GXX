@@ -64,16 +64,23 @@ public:
 	scene current_scene = START_SCREEN;
 	
 
+
 	FloatImage z_buffer;
 
 	Color current_color = Color::WHITE;
 	int start_x;
 	int start_y;
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	float distance = 0.0f;
+
+	bool dragging = false;
 	bool is_second_click = false;
 	bool is_painting = false;
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	int borderWidth = 7;
+
 
 	Button all_buttons[16];
 	Vector2 triangle_points[3];

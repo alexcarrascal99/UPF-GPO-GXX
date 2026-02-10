@@ -29,10 +29,25 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 		// De espacio de la camara a espacio de pantalla
 		v0.x = (v0.x + 1) * 0.5f * framebuffer->width;
 		v0.y = (1.0f - (v0.y + 1) * 0.5f) * framebuffer->height;
+
 		v1.x = (v1.x + 1) * 0.5f * framebuffer->width;
 		v1.y = (1.0f - (v1.y + 1) * 0.5f) * framebuffer->height;
+
 		v2.x = (v2.x + 1) * 0.5f * framebuffer->width;
 		v2.y = (1.0f - (v2.y + 1) * 0.5f) * framebuffer->height;
+
+		if (camera->type == Camera::ORTHOGRAPHIC) {
+			v0.z = -v0.z;   // o solo v0.z
+			v1.z = -v1.z;
+			v2.z = -v2.z;
+		}
+		else {
+			v0.z = (v0.z + 1) * 0.5f;
+			v1.z = (v1.z + 1) * 0.5f;
+			v2.z = (v2.z + 1) * 0.5f;
+		}
+
+
 
 
 		if (this->render_mode == WIREFRAME) {
@@ -56,7 +71,15 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 		}
 
 		else if (this->render_mode == TRIANGLES_INTERPOLATED) {
-			framebuffer->DrawTriangleInterpolated(v0, v1, v2, Color::RED, Color::GREEN, Color::BLUE);
+			Vector3 p0(v0.x, v0.y, v0.z);
+			Vector3 p1(v1.x, v1.y, v1.z);
+			Vector3 p2(v2.x, v2.y, v2.z);
+
+			Vector2 uv0 = mesh->GetUVs()[i];
+			Vector2 uv1 = mesh->GetUVs()[i + 1];
+			Vector2 uv2 = mesh->GetUVs()[i + 2];
+			Image* image = new Image();
+			framebuffer->DrawTriangleInterpolated(p0, p1, p2, Color::RED, Color::GREEN, Color::BLUE, zBuffer, image,  uv0, uv1, uv2);
 		}
 	}
 }

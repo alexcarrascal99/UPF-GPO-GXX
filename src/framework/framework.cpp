@@ -514,7 +514,7 @@ bool Matrix44::Inverse()
             for (k = 0; k < n; k++)//m or n
             {
                temp.M[j][k] -= (temp.M[i][k] * t);
-               final.M[j][k] -= (final.M[i][k] * t);
+               final.M[j][k] -= (final.M[i][k] * t);	
             }
          }
       }

@@ -218,7 +218,8 @@ void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2
 	}
 }
 
-void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2) {
+
+void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, Image* texture, const Vector2& uv0, const Vector2& uv1, const Vector2& uv2){
 
 	int minY = (int)std::min({ p0.y, p1.y, p2.y });
 	int maxY = (int)std::max({ p0.y, p1.y, p2.y });
@@ -259,11 +260,17 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 			float g = u * c0.g + v * c1.g + w * c2.g;
 			float b = u * c0.b + v * c1.b + w * c2.b;
 
+			float z = u * p0.z + v * p1.z + w * p2.z;
+
+
 			if (r < 0) r = 0; if (r > 255) r = 255;
 			if (g < 0) g = 0; if (g > 255) g = 255;
 			if (b < 0) b = 0; if (b > 255) b = 255;
 
-			SetPixel(x, y, Color((Uint8)r, (Uint8)g, (Uint8)b));
+			if (z < zbuffer->GetPixel(x,y)) {
+				zbuffer->SetPixel(x, y, z);
+				SetPixel(x, y, Color((Uint8)r, (Uint8)g, (Uint8)b));
+			}
 		}
 	}
 }
@@ -509,8 +516,7 @@ void ForEachPixel(Image& img, const Image& img2, F f) {
 
 #endif
 
-FloatImage::FloatImage(unsigned int width, unsigned int height)
-{
+FloatImage::FloatImage(unsigned int width, unsigned int height){
 	this->width = width;
 	this->height = height;
 	pixels = new float[width * height];

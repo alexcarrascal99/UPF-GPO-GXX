@@ -28,16 +28,31 @@ void Application::Init(void)
 
     camera = new Camera();
 
-    float aspect = (float)window_width / (float)window_height;
-    camera->SetPerspective(45.0f, aspect, 0.01f, 100.0f);
-    camera->LookAt(Vector3(0, 0, 90), Vector3(0, 0.25, 0), Vector3(0, 1, 0));
-
-
     for (int i = 0; i < 3; i++) {
         entity[i] = new Entity();
     }
-    entity[0]->Translate(0.9, 0, 2);
+    entity[0]->Translate(0.5, 0, 0.5);
     entity[2]->Translate(-0.9, 0, 2);
+
+
+    float aspect = (float)window_width / (float)window_height;
+    camera->SetPerspective(45.0f, aspect, 0.01f, 100.0f);
+    camera->LookAt(Vector3(0, 0, 90), Vector3(0, 0, 0), Vector3(0, 1, 0));
+    camera->UpdateViewMatrix();
+    camera->UpdateProjectionMatrix();
+    camera->UpdateViewProjectionMatrix();
+
+    Vector3 dir = camera->eye - camera->center;
+
+    distance = dir.Length();
+
+    yaw = atan2(dir.x, dir.z);
+    pitch = asin(dir.y / distance);
+
+
+
+	z_buffer = FloatImage(window_width, window_height);
+	z_buffer.Fill(1.0f);
 
     current_color = Color::WHITE;
 
@@ -47,7 +62,7 @@ void Application::Init(void)
 
 // Render one frame
 void Application::Render(void)
-{
+    {
     framebuffer.Fill(Color::BLACK);
 
     z_buffer.Fill(10000.0f);
@@ -190,6 +205,9 @@ void Application::OnMouseButtonDown(SDL_MouseButtonEvent event)
     Vector2 mouse_pos((float)event.x, (float)current_y);
     if (current_y < 40) return;
 
+    dragging = true;
+    last_mouse_x = event.x;
+    last_mouse_y = event.y;
     // Aquí puedes añadir la lógica que desees para el evento de mouse down
 }
 
@@ -197,12 +215,34 @@ void Application::OnMouseButtonUp(SDL_MouseButtonEvent event)
 {
     if (event.button == SDL_BUTTON_LEFT) {
         is_painting = false;
+        dragging = false;
     }
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
-   
+    if (!dragging) return;
+
+    float dx = (event.x - last_mouse_x) * 0.001f;
+    float dy = (event.y - last_mouse_y) * 0.004f;
+
+    last_mouse_x = event.x;
+    last_mouse_y = event.y;
+
+    yaw += dx;
+    pitch += dy;
+
+    if (pitch > 1.4f) pitch = 1.4f;
+    if (pitch < -1.4f) pitch = -1.4f;
+
+    Vector3 pos;
+
+    pos.x = distance * cos(pitch) * sin(yaw);
+    pos.y = distance * sin(pitch);
+    pos.z = distance * cos(pitch) * cos(yaw);
+
+    camera->eye = camera->center + pos;
+    camera->UpdateViewMatrix();
 
 }
 
