@@ -22,6 +22,7 @@ Vector3 Camera::ProjectVector(Vector3 pos)
 {
 	Vector4 pos4 = Vector4(pos.x, pos.y, pos.z, 1.0);
 	Vector4 result = viewprojection_matrix * pos4;
+
 	if (type == ORTHOGRAPHIC)
 		return result.GetVector3();
 	else
@@ -99,6 +100,7 @@ void Camera::UpdateViewMatrix()
 	Vector3 cameraUp = side.Cross(forward).Normalize(); // Producto vectorial de Forward X Side
 
 
+
 	// Como ViewMatrix = R transpuesta * T transpuesta. Primero hacemos la matriz de rotación (R transpuesta)
 	Matrix44 rotation;
 	rotation.SetIdentity();
@@ -116,15 +118,15 @@ void Camera::UpdateViewMatrix()
 
 	rotation.M[3][3] = 1;
 
-	// Luego hacemos la matriz de traslacion, entonces solo es multiplicar R-1*T-1 para tener la ViewMatrix
-	Matrix44 translation;
-	translation.SetIdentity();
-	translation.M[3][0] = -eye.x;
-	translation.M[3][1] = -eye.y;
-	translation.M[3][2] = -eye.z;
+	rotation.M[3][0] = -side.Dot(eye);
+	rotation.M[3][1] = -cameraUp.Dot(eye);
+	rotation.M[3][2] = -forward.Dot(eye);
+	rotation.M[3][3] = 1.0f;
 
-	view_matrix = rotation * translation;
+	view_matrix = rotation;
 	UpdateViewProjectionMatrix();
+
+
 }
 
 // Create a projection matrix

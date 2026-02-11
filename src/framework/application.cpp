@@ -33,11 +33,9 @@ void Application::Init(void)
     }
     entity[0]->Translate(0.5, 0, 0.5);
     entity[2]->Translate(-0.9, 0, 2);
-
-
     float aspect = (float)window_width / (float)window_height;
     camera->SetPerspective(45.0f, aspect, 0.01f, 100.0f);
-    camera->LookAt(Vector3(0, 0, 90), Vector3(0, 0, 0), Vector3(0, 1, 0));
+    camera->LookAt(Vector3(0, 0, 40), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
     camera->UpdateViewMatrix();
     camera->UpdateProjectionMatrix();
     camera->UpdateViewProjectionMatrix();
@@ -205,6 +203,10 @@ void Application::OnMouseButtonDown(SDL_MouseButtonEvent event)
     Vector2 mouse_pos((float)event.x, (float)current_y);
     if (current_y < 40) return;
 
+    Vector3 d = camera->eye - camera->center;
+    distance = d.Length();
+    yaw = atan2(d.x, d.z);
+    pitch = asin(d.y / distance);
     dragging = true;
     last_mouse_x = event.x;
     last_mouse_y = event.y;
@@ -223,17 +225,17 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
     if (!dragging) return;
 
-    float dx = (event.x - last_mouse_x) * 0.001f;
-    float dy = (event.y - last_mouse_y) * 0.004f;
+    float dx = (event.x - last_mouse_x) * 0.002f;
+    float dy = (event.y - last_mouse_y) * 0.002f;
 
     last_mouse_x = event.x;
     last_mouse_y = event.y;
 
-    yaw += dx;
+    yaw -= dx;
     pitch += dy;
 
-    if (pitch > 1.4f) pitch = 1.4f;
-    if (pitch < -1.4f) pitch = -1.4f;
+    if (pitch > 1.4f) pitch = 1.2f;
+    if (pitch < -1.2f) pitch = -1.2f;
 
     Vector3 pos;
 
@@ -243,6 +245,7 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 
     camera->eye = camera->center + pos;
     camera->UpdateViewMatrix();
+
 
 }
 

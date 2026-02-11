@@ -36,16 +36,10 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 		v2.x = (v2.x + 1) * 0.5f * framebuffer->width;
 		v2.y = (1.0f - (v2.y + 1) * 0.5f) * framebuffer->height;
 
-		if (camera->type == Camera::ORTHOGRAPHIC) {
-			v0.z = -v0.z;   // o solo v0.z
-			v1.z = -v1.z;
-			v2.z = -v2.z;
-		}
-		else {
-			v0.z = (v0.z + 1) * 0.5f;
-			v1.z = (v1.z + 1) * 0.5f;
-			v2.z = (v2.z + 1) * 0.5f;
-		}
+		v0.z = -(v0.z + 1) * 0.5f;
+		v1.z = -(v1.z + 1) * 0.5f;
+		v2.z = -(v2.z + 1) * 0.5f;
+		
 
 
 
@@ -79,7 +73,7 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 			Vector2 uv1 = mesh->GetUVs()[i + 1];
 			Vector2 uv2 = mesh->GetUVs()[i + 2];
 			Image* image = new Image();
-			framebuffer->DrawTriangleInterpolated(p0, p1, p2, Color::RED, Color::GREEN, Color::BLUE, zBuffer, image,  uv0, uv1, uv2);
+			framebuffer->DrawTriangleInterpolated(p0, p1, p2, Color::RED, Color::GREEN, Color::BLUE, zBuffer, texture,  uv0, uv1, uv2);
 		}
 	}
 }

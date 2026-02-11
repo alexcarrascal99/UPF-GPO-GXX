@@ -269,7 +269,15 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 
 			if (z < zbuffer->GetPixel(x,y)) {
 				zbuffer->SetPixel(x, y, z);
-				SetPixel(x, y, Color((Uint8)r, (Uint8)g, (Uint8)b));
+				float tu = u * uv0.x + v * uv1.x + w * uv2.x;
+				float tv = u * uv0.y + v * uv1.y + w * uv2.y;
+
+				int tx = tu * (texture->width);
+				int ty = tv * (texture->height);
+
+				Color c = texture->GetPixel(tx, ty);
+
+				SetPixel(x, y, c);
 			}
 		}
 	}

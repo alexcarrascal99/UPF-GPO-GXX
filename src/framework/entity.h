@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include "camera.h"
 #include "image.h"
+#include "texture.h"
 
 
 class Entity {
@@ -29,6 +30,7 @@ public:
 	Mesh* mesh;
 	Matrix44 modelMatrix;
 	Mode mode;
+	Image* texture;
 
 	
 
