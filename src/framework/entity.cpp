@@ -25,7 +25,6 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 		v1 = camera->ProjectVector(v1);
 		v2 = camera->ProjectVector(v2);
 
-
 		// De espacio de la camara a espacio de pantalla
 		v0.x = (v0.x + 1) * 0.5f * framebuffer->width;
 		v0.y = (1.0f - (v0.y + 1) * 0.5f) * framebuffer->height;
@@ -35,11 +34,20 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 
 		v2.x = (v2.x + 1) * 0.5f * framebuffer->width;
 		v2.y = (1.0f - (v2.y + 1) * 0.5f) * framebuffer->height;
-
-		v0.z = -(v0.z + 1) * 0.5f;
-		v1.z = -(v1.z + 1) * 0.5f;
-		v2.z = -(v2.z + 1) * 0.5f;
 		
+
+		v0.z = -v0.z;
+		v1.z = -v1.z;
+		v2.z = -v2.z;
+
+		// Clipping básico por far/near (bien hecho)
+		if (
+			(v0.z < -1 && v1.z < -1 && v2.z < -1) || // todos detrás
+			(v0.z > 1 && v1.z > 1 && v2.z > 1)    // todos lejos
+			)
+		{
+			continue;
+		}
 
 
 

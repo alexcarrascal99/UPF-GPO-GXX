@@ -28,11 +28,16 @@ void Application::Init(void)
 
     camera = new Camera();
 
+    Image* texture = new Image();
+    texture->LoadTGA("textures/lee_color_specular.tga", true);
+
+
     for (int i = 0; i < 3; i++) {
         entity[i] = new Entity();
     }
+    entity[1]->texture = texture;
     entity[0]->Translate(0.5, 0, 0.5);
-    entity[2]->Translate(-0.9, 0, 2);
+    entity[2]->Translate(-0.5, 0, 0.51);
     float aspect = (float)window_width / (float)window_height;
     camera->SetPerspective(45.0f, aspect, 0.01f, 100.0f);
     camera->LookAt(Vector3(0, 0, 40), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
@@ -103,15 +108,13 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     switch (event.keysym.sym) {
     case SDLK_ESCAPE: exit(0); break;
 
-    case SDLK_1: // single entity mode
+    case SDLK_1:
         current_scene = SINGLE_ENTITY;
         break;
 
-    case SDLK_2: // multiples entities mode
+    case SDLK_2: 
         current_scene = MULTIPLE_ENTITIES;
         break;
-
-        // camera near / camera far / fov
 
     case SDLK_n:
         current_property = CAM_NEAR;
@@ -167,10 +170,10 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_PLUS:
     case SDLK_KP_PLUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane -= 0.0005f;
+            camera->near_plane += 0.01f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane += 2.0f;
+            camera->far_plane += 0.01f;
         }
         else if (current_property == FOV) {
             camera->fov -= 2.0f;
@@ -182,10 +185,10 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_MINUS:
     case SDLK_KP_MINUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane += 0.0005f;
+            camera->near_plane -= 0.01f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane -= 2.0f;
+            camera->far_plane -= 0.01f;
         }
         else if (current_property == FOV) {
             camera->fov += 2.0f;

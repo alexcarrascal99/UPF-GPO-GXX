@@ -255,7 +255,6 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 			float v = ((p2.x - px) * (p0.y - py) - (p0.x - px) * (p2.y - py)) / area;
 			float w = 1.0f - u - v; 
 
-			// interpolacion
 			float r = u * c0.r + v * c1.r + w * c2.r;
 			float g = u * c0.g + v * c1.g + w * c2.g;
 			float b = u * c0.b + v * c1.b + w * c2.b;
@@ -272,10 +271,15 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 				float tu = u * uv0.x + v * uv1.x + w * uv2.x;
 				float tv = u * uv0.y + v * uv1.y + w * uv2.y;
 
-				int tx = tu * (texture->width);
-				int ty = tv * (texture->height);
+				if (tu < 0.0f) tu = 0.0f;
+				if (tu > 1.0f) tu = 1.0f;
+				if (tv < 0.0f) tv = 0.0f;
+				if (tv > 1.0f) tv = 1.0f;
+				int tx = (int)(tu * (texture->width - 1));
+				int ty = (int)(tv * (texture->height - 1));
 
 				Color c = texture->GetPixel(tx, ty);
+
 
 				SetPixel(x, y, c);
 			}
