@@ -47,7 +47,6 @@ public:
 	Vector2 mouse_delta; // Mouse movement in the last frame
 	bool fill_shapes = false;
 	enum scene {
-		START_SCREEN,
 		SINGLE_ENTITY,
 		MULTIPLE_ENTITIES
 	};
@@ -61,7 +60,8 @@ public:
 
 
 	property current_property = CAM_NEAR;
-	scene current_scene = START_SCREEN;
+	scene current_scene = SINGLE_ENTITY;
+	bool use_texture = false;
 	
 
 
@@ -87,6 +87,7 @@ public:
 	int triangle_click_counter = 0;
 	Entity* entity[3];
 	Camera* camera;
+	Image* texture;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);

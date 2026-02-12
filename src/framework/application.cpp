@@ -28,24 +28,21 @@ void Application::Init(void)
 
     camera = new Camera();
 
-    Image* texture = new Image();
+    texture = new Image();
     texture->LoadTGA("textures/lee_color_specular.tga", true);
-
 
     for (int i = 0; i < 3; i++) {
         entity[i] = new Entity();
     }
-    entity[1]->texture = texture;
-    entity[0]->Translate(0.5, 0, 0.5);
-    entity[2]->Translate(-0.5, 0, 0.51);
-    float aspect = (float)window_width / (float)window_height;
-    camera->SetPerspective(45.0f, aspect, 0.01f, 100.0f);
-    camera->LookAt(Vector3(0, 0, 40), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
-    camera->UpdateViewMatrix();
-    camera->UpdateProjectionMatrix();
-    camera->UpdateViewProjectionMatrix();
 
-    Vector3 dir = camera->eye - camera->center;
+    entity[0]->Translate(0.8, 0, -0.3);
+    entity[2]->Translate(-0.8, 0, -0.2);
+    
+	float aspect = (float) window_width / (float) window_height;
+    camera->LookAt(Vector3(0, 0, 1.2f), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
+    camera->SetPerspective(45, aspect, 0.05f, 10.f);
+
+    Vector3 dir = camera->eye - camera->center; 
 
     distance = dir.Length();
 
@@ -53,9 +50,8 @@ void Application::Init(void)
     pitch = asin(dir.y / distance);
 
 
-
 	z_buffer = FloatImage(window_width, window_height);
-	z_buffer.Fill(1.0f);
+	z_buffer.Fill(100.f);
 
     current_color = Color::WHITE;
 
@@ -66,11 +62,8 @@ void Application::Init(void)
 // Render one frame
 void Application::Render(void)
     {
+    z_buffer.Fill(100.f);
     framebuffer.Fill(Color::BLACK);
-
-    z_buffer.Fill(10000.0f);
-
-    entity[1]->Render(&framebuffer, camera, &z_buffer);
 
 
     if (current_scene == SINGLE_ENTITY) {
@@ -79,10 +72,9 @@ void Application::Render(void)
     }
 
     if (current_scene == MULTIPLE_ENTITIES) {
-        entity[0]->Render(&framebuffer, camera, &z_buffer);
-        entity[1]->Render(&framebuffer, camera, &z_buffer);
-        entity[2]->Render(&framebuffer, camera, &z_buffer);
-        
+        for (int i = 0; i < 3; i++) {
+			entity[i]->Render(&framebuffer, camera, &z_buffer);
+        }        
         entity[0]->mode = Entity::ROTATE;
         entity[1]->mode = Entity::TRANSLATE;
         entity[2]->mode = Entity::SCALE;
@@ -94,9 +86,10 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-    // mode 1: rota, mode 2: trasllada,
-    for (int i = 0; i < 3; i++) {
-        entity[i]->Update(seconds_elapsed);
+    if (current_scene == MULTIPLE_ENTITIES) {
+        for (int i = 0; i < 3; i++) {
+            entity[i]->Update(seconds_elapsed);
+        }
     }
 
 }
@@ -127,53 +120,51 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_v:
         current_property = FOV;
         break;
-
-        // switches between texture, triangles and triangles interpolated
-
-    case SDLK_t:
-        entity[0]->use_texture = !entity[0]->use_texture;
-        entity[1]->use_texture = !entity[1]->use_texture;
-        entity[2]->use_texture = !entity[2]->use_texture;
-        break;
-
-    case SDLK_z:
-        entity[0]->show_zbuffer = !entity[0]->show_zbuffer;
-        entity[1]->show_zbuffer = !entity[1]->show_zbuffer;
-        entity[2]->show_zbuffer = !entity[2]->show_zbuffer;
-        break;
-
     case SDLK_c:
         for (int i = 0; i < 3; i++) {
                 entity[i]->render_mode = Entity::TRIANGLES;
             } 
         break;
 
-    case SDLK_i :
+    case SDLK_i:
     for (int i = 0; i < 3; i++) {
         entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
     }
     break;
 
+    case SDLK_t:
+        if (use_texture == true) {
+            for (int i = 0; i < 3;i++) {
+                entity[i]->texture = nullptr;
+				use_texture = false;
+            }
+        }
+        else {
+            for (int i = 0; i < 3; i++) {
+                entity[i]->texture = texture;
+            }
+        }
+        break;
     case SDLK_w:
-        entity[0]->render_mode = Entity::WIREFRAME;
-        entity[1]->render_mode = Entity::WIREFRAME;
-        entity[2]->render_mode = Entity::WIREFRAME;
+        for (int i = 0; i < 3; i++) {
+            entity[i]->render_mode = Entity::WIREFRAME;
+        }
         break;
 
     case SDLK_p:
-        entity[0]->render_mode = Entity::POINTCLOUD;
-        entity[1]->render_mode = Entity::POINTCLOUD;
-        entity[2]->render_mode = Entity::POINTCLOUD;
+          for (int i = 0; i < 3; i++) {
+            entity[i]->render_mode = Entity::POINTCLOUD;
+        }
         break;
 
     // increase current property
     case SDLK_PLUS:
     case SDLK_KP_PLUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane += 0.01f;
+            camera->near_plane *= 1.1f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane += 0.01f;
+            camera->far_plane *= 1.1f;
         }
         else if (current_property == FOV) {
             camera->fov -= 2.0f;
@@ -185,10 +176,10 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_MINUS:
     case SDLK_KP_MINUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane -= 0.01f;
+            camera->near_plane /= 1.1f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane -= 0.01f;
+            camera->far_plane /= 1.1f;
         }
         else if (current_property == FOV) {
             camera->fov += 2.0f;

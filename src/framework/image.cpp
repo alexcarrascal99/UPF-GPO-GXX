@@ -228,7 +228,8 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 	if (maxY >= (int)height) maxY = (int)height - 1;
 	if (minY > maxY) return;
 
-	std::vector<Cell> AET(maxY + 1);
+	std::vector<Cell> AET(maxY+1);
+
 
 
 	ScanLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, AET);
@@ -255,19 +256,13 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 			float v = ((p2.x - px) * (p0.y - py) - (p0.x - px) * (p2.y - py)) / area;
 			float w = 1.0f - u - v; 
 
-			float r = u * c0.r + v * c1.r + w * c2.r;
-			float g = u * c0.g + v * c1.g + w * c2.g;
-			float b = u * c0.b + v * c1.b + w * c2.b;
-
 			float z = u * p0.z + v * p1.z + w * p2.z;
 
 
-			if (r < 0) r = 0; if (r > 255) r = 255;
-			if (g < 0) g = 0; if (g > 255) g = 255;
-			if (b < 0) b = 0; if (b > 255) b = 255;
 
-			if (z < zbuffer->GetPixel(x,y)) {
+			if (z < zbuffer->GetPixel(x, y)) {
 				zbuffer->SetPixel(x, y, z);
+				if (texture != nullptr) {
 				float tu = u * uv0.x + v * uv1.x + w * uv2.x;
 				float tv = u * uv0.y + v * uv1.y + w * uv2.y;
 
@@ -279,11 +274,23 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 				int ty = (int)(tv * (texture->height - 1));
 
 				Color c = texture->GetPixel(tx, ty);
-
-
 				SetPixel(x, y, c);
+				}
+				else{
+					float r = u * c0.r + v * c1.r + w * c2.r;
+					float g = u * c0.g + v * c1.g + w * c2.g;
+					float b = u * c0.b + v * c1.b + w * c2.b;
+
+					if (r < 0) r = 0; if (r > 255) r = 255;
+					if (g < 0) g = 0; if (g > 255) g = 255;
+					if (b < 0) b = 0; if (b > 255) b = 255;
+
+					SetPixel(x, y, Color(r, g, b));
+				}
 			}
+
 		}
+		
 	}
 }
 
