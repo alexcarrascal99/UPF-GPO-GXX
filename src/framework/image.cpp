@@ -256,27 +256,30 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 			float v = ((p2.x - px) * (p0.y - py) - (p0.x - px) * (p2.y - py)) / area;
 			float w = 1.0f - u - v; 
 
+
 			float z = u * p0.z + v * p1.z + w * p2.z;
 
+			float zbuff_value = zbuffer->GetPixel(x, y);
 
-
-			if (z < zbuffer->GetPixel(x, y)) {
-				zbuffer->SetPixel(x, y, z);
-				if (texture != nullptr) {
-				float tu = u * uv0.x + v * uv1.x + w * uv2.x;
-				float tv = u * uv0.y + v * uv1.y + w * uv2.y;
-
-				if (tu < 0.0f) tu = 0.0f;
-				if (tu > 1.0f) tu = 1.0f;
-				if (tv < 0.0f) tv = 0.0f;
-				if (tv > 1.0f) tv = 1.0f;
-				int tx = (int)(tu * (texture->width - 1));
-				int ty = (int)(tv * (texture->height - 1));
-
-				Color c = texture->GetPixel(tx, ty);
-				SetPixel(x, y, c);
+			if (z < zbuff_value|| zbuff_value < 0.0f) {
+				if (z < zbuff_value) {
+					zbuffer->SetPixel(x, y, z);
 				}
-				else{
+				if (texture != nullptr) {
+					float tu = u * uv0.x + v * uv1.x + w * uv2.x;
+					float tv = u * uv0.y + v * uv1.y + w * uv2.y;
+
+					if (tu < 0.0f) tu = 0.0f;
+					if (tu > 1.0f) tu = 1.0f;
+					if (tv < 0.0f) tv = 0.0f;
+					if (tv > 1.0f) tv = 1.0f;
+					int tx = (int)(tu * (texture->width - 1));
+					int ty = (int)(tv * (texture->height - 1));
+
+					Color c = texture->GetPixel(tx, ty);
+					SetPixel(x, y, c);
+				}
+				else {
 					float r = u * c0.r + v * c1.r + w * c2.r;
 					float g = u * c0.g + v * c1.g + w * c2.g;
 					float b = u * c0.b + v * c1.b + w * c2.b;
@@ -284,15 +287,16 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 					if (r < 0) r = 0; if (r > 255) r = 255;
 					if (g < 0) g = 0; if (g > 255) g = 255;
 					if (b < 0) b = 0; if (b > 255) b = 255;
-
 					SetPixel(x, y, Color(r, g, b));
 				}
 			}
 
 		}
-		
+
 	}
 }
+			
+
 
 
 Image Image::GetArea(unsigned int start_x, unsigned int start_y, unsigned int width, unsigned int height)

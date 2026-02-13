@@ -39,8 +39,8 @@ void Application::Init(void)
     entity[2]->Translate(-0.8, 0, -0.2);
     
 	float aspect = (float) window_width / (float) window_height;
-    camera->LookAt(Vector3(0, 0, 1.2f), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
-    camera->SetPerspective(45, aspect, 0.05f, 10.f);
+    camera->LookAt(Vector3(0, 0, 2.0f), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
+    camera->SetPerspective(45, aspect, 0.05f, 3.0f);
 
     Vector3 dir = camera->eye - camera->center; 
 
@@ -62,7 +62,14 @@ void Application::Init(void)
 // Render one frame
 void Application::Render(void)
     {
-    z_buffer.Fill(100.f);
+    if (use_zbuffer == true) 
+    {
+        z_buffer.Fill(10000.f);
+    }
+    else {
+		z_buffer.Fill(-50000.f);
+    }
+
     framebuffer.Fill(Color::BLACK);
 
 
@@ -122,14 +129,16 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
         break;
     case SDLK_c:
         for (int i = 0; i < 3; i++) {
+            if (interpolated_color == true) {
                 entity[i]->render_mode = Entity::TRIANGLES;
-            } 
+                interpolated_color = false;
+            }
+            else {
+            entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
+            interpolated_color = true;
+            }
+         } 
         break;
-
-    case SDLK_i:
-    for (int i = 0; i < 3; i++) {
-        entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
-    }
     break;
 
     case SDLK_t:
@@ -142,13 +151,19 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
         else {
             for (int i = 0; i < 3; i++) {
                 entity[i]->texture = texture;
+				use_texture = true;
             }
         }
         break;
     case SDLK_w:
         for (int i = 0; i < 3; i++) {
-            entity[i]->render_mode = Entity::WIREFRAME;
+
+            if (entity[i]->render_mode == Entity::WIREFRAME)
+                entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
+            else
+                entity[i]->render_mode = Entity::WIREFRAME;
         }
+
         break;
 
     case SDLK_p:
@@ -157,17 +172,37 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
         }
         break;
 
+    case SDLK_z:
+        if (use_zbuffer == true) {
+			z_buffer.Fill(-50000.f); 
+            use_zbuffer = false;
+		}
+		else
+        { 
+            z_buffer.Fill(10000.f); 
+            use_zbuffer = true;
+        }
+        break;
     // increase current property
     case SDLK_PLUS:
     case SDLK_KP_PLUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane *= 1.1f;
+            camera->near_plane += 0.5f;
+            if (camera->near_plane < 0.01f)
+                camera->near_plane = 0.01f;
+
+            if (camera->near_plane >= camera->far_plane - 0.01f)
+                camera->near_plane = camera->far_plane - 0.01f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane *= 1.1f;
+            camera->far_plane += 0.5f;
+            if (camera->far_plane <= camera->near_plane + 0.01f)
+                camera->far_plane = camera->near_plane + 0.01f;
         }
         else if (current_property == FOV) {
-            camera->fov -= 2.0f;
+            camera->fov += 2.0f;
+            if (camera->fov > 120.0f)
+                camera->fov = 120.0f;
         }
         camera->SetPerspective(camera->fov, aspect, camera->near_plane, camera->far_plane);
         break;
@@ -176,13 +211,20 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_MINUS:
     case SDLK_KP_MINUS:
         if (current_property == CAM_NEAR) {
-            camera->near_plane /= 1.1f;
+            camera->near_plane -= 0.5f;
+            if (camera->near_plane < 0.01f)
+                camera->near_plane = 0.01f;
+            if (camera->far_plane <= camera->near_plane + 0.01f)
+                camera->far_plane = camera->near_plane + 0.01f;
         }
         else if (current_property == CAM_FAR) {
-            camera->far_plane /= 1.1f;
+            camera->far_plane -= 0.5f;
         }
         else if (current_property == FOV) {
-            camera->fov += 2.0f;
+            camera->fov -= 2.0f;
+            if (camera->fov < 5.0f)
+                camera->fov = 5.0f;
+        
         }
         camera->SetPerspective(camera->fov, aspect, camera->near_plane, camera->far_plane);
         break;
@@ -245,23 +287,34 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 
 void Application::OnWheel(SDL_MouseWheelEvent event)
 {
-    float zoomSpeed = 1.0f;
 
     if (event.y > 0) {
-        camera->fov -= zoomSpeed;
+        distance -= 0.05f;
     }
 
     else if (event.y < 0) {
-        camera->fov += zoomSpeed;
+        distance += 0.05f;
+    }
+    if (distance < 0.2f) {
+        distance = 0.2f;
+    }
+    else if (distance > 20.0f) {
+        distance = 20.0f;
     }
 
-    if (camera->fov < 5.0f) camera->fov = 5.0f;
-    if (camera->fov > 120.0f) camera->fov = 120.0f;
 
-    camera->UpdateProjectionMatrix();
+    Vector3 pos;
+    pos.x = distance * cos(pitch) * sin(yaw);
+    pos.y = distance * sin(pitch);
+    pos.z = distance * cos(pitch) * cos(yaw);
 
-    // ...
+    camera->eye = camera->center + pos;
+
+    camera->UpdateViewMatrix();
+
 }
+
+
 
 void Application::OnFileChanged(const char* filename)
 {

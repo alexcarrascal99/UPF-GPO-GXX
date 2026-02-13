@@ -77,6 +77,8 @@ public:
 	bool dragging = false;
 	bool is_second_click = false;
 	bool is_painting = false;
+	bool use_zbuffer = true;
+	bool interpolated_color = true;
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	int borderWidth = 7;
