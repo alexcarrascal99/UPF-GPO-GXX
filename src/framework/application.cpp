@@ -16,6 +16,10 @@ Application::Application(const char* caption, int width, int height)
     this->window_height = h;
     this->keystate = SDL_GetKeyboardState(nullptr);
     this->framebuffer.Resize(w, h);
+    this->camera = new Camera(); 
+    this->current_exercise = EX1;
+    this->shader = nullptr;
+    this->mesh = nullptr;
 }
 
 Application::~Application()
@@ -24,80 +28,36 @@ Application::~Application()
 
 void Application::Init(void)
 {
-    std::cout << "Initiating app..." << std::endl;
+    std::cout << "Cargando Shaders..." << std::endl;
+    mesh = new Mesh();
+    mesh->CreateQuad();
 
-    camera = new Camera();
-
-    texture = new Image();
-    texture->LoadTGA("textures/lee_color_specular.tga", true);
-
-    for (int i = 0; i < 3; i++) {
-        entity[i] = new Entity();
-    }
-
-    entity[0]->Translate(0.8, 0, -0.3);
-    entity[2]->Translate(-0.8, 0, -0.2);
-    
-	float aspect = (float) window_width / (float) window_height;
-    camera->LookAt(Vector3(0, 0, 2.0f), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
-    camera->SetPerspective(45, aspect, 0.05f, 3.0f);
-
-    Vector3 dir = camera->eye - camera->center; 
-
-    distance = dir.Length();
-
-    yaw = atan2(dir.x, dir.z);
-    pitch = asin(dir.y / distance);
-
-
-	z_buffer = FloatImage(window_width, window_height);
-	z_buffer.Fill(100.f);
-
-    current_color = Color::WHITE;
-
+    // Prueba con la ruta que creas más lógica
+   
+    shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
 }
-
-
 
 // Render one frame
 void Application::Render(void)
-    {
-    if (use_zbuffer == true) 
-    {
-        z_buffer.Fill(10000.f);
-    }
-    else {
-		z_buffer.Fill(-50000.f);
-    }
+{
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    float aspect = (float)window_width / (float)window_height;
 
-    framebuffer.Fill(Color::BLACK);
+    shader->Enable();
 
+    shader->SetUniform1("u_aspect", aspect);
+    shader->SetUniform1("u_exercise", (int)current_exercise); // Enviamos 1, 2, 3 o 4
+    shader->SetUniform1("u_subtask", current_subtask);        // Enviamos 0, 1, 2...
 
-    if (current_scene == SINGLE_ENTITY) {
-        entity[1]->Render(&framebuffer, camera, &z_buffer);
-        entity[1]->mode = Entity::NORMAL;
-    }
-
-    if (current_scene == MULTIPLE_ENTITIES) {
-        for (int i = 0; i < 3; i++) {
-			entity[i]->Render(&framebuffer, camera, &z_buffer);
-        }        
-        entity[0]->mode = Entity::ROTATE;
-        entity[1]->mode = Entity::TRANSLATE;
-        entity[2]->mode = Entity::SCALE;
-    }
-
-    framebuffer.Render();
+    mesh->Render();
+    shader->Disable();
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-    if (current_scene == MULTIPLE_ENTITIES) {
-        for (int i = 0; i < 3; i++) {
-            entity[i]->Update(seconds_elapsed);
-        }
-    }
+
 
 }
 void Application::OnKeyPressed(SDL_KeyboardEvent event)
@@ -108,126 +68,18 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     switch (event.keysym.sym) {
     case SDLK_ESCAPE: exit(0); break;
 
-    case SDLK_1:
-        current_scene = SINGLE_ENTITY;
-        break;
+    case SDLK_1: current_exercise = EX1; break;
+    case SDLK_2: current_exercise = EX2; break;
+    case SDLK_3: current_exercise = EX3; break;
+    case SDLK_4: current_exercise = EX4; break;
 
-    case SDLK_2: 
-        current_scene = MULTIPLE_ENTITIES;
-        break;
-
-    case SDLK_n:
-        current_property = CAM_NEAR;
-        break;
-
-    case SDLK_f:
-        current_property = CAM_FAR;
-        break;
-
-    case SDLK_v:
-        current_property = FOV;
-        break;
-    case SDLK_c:
-        for (int i = 0; i < 3; i++) {
-            if (interpolated_color == true) {
-                entity[i]->render_mode = Entity::TRIANGLES;
-                interpolated_color = false;
-            }
-            else {
-            entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
-            interpolated_color = true;
-            }
-         } 
-        break;
-    break;
-
-    case SDLK_t:
-        if (use_texture == true) {
-            for (int i = 0; i < 3;i++) {
-                entity[i]->texture = nullptr;
-				use_texture = false;
-            }
-        }
-        else {
-            for (int i = 0; i < 3; i++) {
-                entity[i]->texture = texture;
-				use_texture = true;
-            }
-        }
-        break;
-    case SDLK_w:
-        for (int i = 0; i < 3; i++) {
-
-            if (entity[i]->render_mode == Entity::WIREFRAME)
-                entity[i]->render_mode = Entity::TRIANGLES_INTERPOLATED;
-            else
-                entity[i]->render_mode = Entity::WIREFRAME;
-        }
-
-        break;
-
-    case SDLK_p:
-          for (int i = 0; i < 3; i++) {
-            entity[i]->render_mode = Entity::POINTCLOUD;
-        }
-        break;
-
-    case SDLK_z:
-        if (use_zbuffer == true) {
-			z_buffer.Fill(-50000.f); 
-            use_zbuffer = false;
-		}
-		else
-        { 
-            z_buffer.Fill(10000.f); 
-            use_zbuffer = true;
-        }
-        break;
-    // increase current property
-    case SDLK_PLUS:
-    case SDLK_KP_PLUS:
-        if (current_property == CAM_NEAR) {
-            camera->near_plane += 0.5f;
-            if (camera->near_plane < 0.01f)
-                camera->near_plane = 0.01f;
-
-            if (camera->near_plane >= camera->far_plane - 0.01f)
-                camera->near_plane = camera->far_plane - 0.01f;
-        }
-        else if (current_property == CAM_FAR) {
-            camera->far_plane += 0.5f;
-            if (camera->far_plane <= camera->near_plane + 0.01f)
-                camera->far_plane = camera->near_plane + 0.01f;
-        }
-        else if (current_property == FOV) {
-            camera->fov += 2.0f;
-            if (camera->fov > 120.0f)
-                camera->fov = 120.0f;
-        }
-        camera->SetPerspective(camera->fov, aspect, camera->near_plane, camera->far_plane);
-        break;
-
-    // decrease current property
-    case SDLK_MINUS:
-    case SDLK_KP_MINUS:
-        if (current_property == CAM_NEAR) {
-            camera->near_plane -= 0.5f;
-            if (camera->near_plane < 0.01f)
-                camera->near_plane = 0.01f;
-            if (camera->far_plane <= camera->near_plane + 0.01f)
-                camera->far_plane = camera->near_plane + 0.01f;
-        }
-        else if (current_property == CAM_FAR) {
-            camera->far_plane -= 0.5f;
-        }
-        else if (current_property == FOV) {
-            camera->fov -= 2.0f;
-            if (camera->fov < 5.0f)
-                camera->fov = 5.0f;
-        
-        }
-        camera->SetPerspective(camera->fov, aspect, camera->near_plane, camera->far_plane);
-        break;
+        // Selección de Subtarea (se aplica al ejercicio que esté activo)
+    case SDLK_a: current_subtask = 0; break;
+    case SDLK_b: current_subtask = 1; break;
+    case SDLK_c: current_subtask = 2; break;
+    case SDLK_d: current_subtask = 3; break;
+    case SDLK_e: current_subtask = 4; break;
+    case SDLK_f: current_subtask = 5; break;
     }
 }
 
@@ -281,43 +133,29 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 
     camera->eye = camera->center + pos;
     camera->UpdateViewMatrix();
-
-
 }
 
 void Application::OnWheel(SDL_MouseWheelEvent event)
 {
+    float zoomSpeed = 1.0f;
 
     if (event.y > 0) {
-        distance -= 0.05f;
+        camera->fov -= zoomSpeed;
     }
 
     else if (event.y < 0) {
-        distance += 0.05f;
-    }
-    if (distance < 0.2f) {
-        distance = 0.2f;
-    }
-    else if (distance > 20.0f) {
-        distance = 20.0f;
+        camera->fov += zoomSpeed;
     }
 
+    if (camera->fov < 5.0f) camera->fov = 5.0f;
+    if (camera->fov > 120.0f) camera->fov = 120.0f;
 
-    Vector3 pos;
-    pos.x = distance * cos(pitch) * sin(yaw);
-    pos.y = distance * sin(pitch);
-    pos.z = distance * cos(pitch) * cos(yaw);
+    camera->UpdateProjectionMatrix();
 
-    camera->eye = camera->center + pos;
-
-    camera->UpdateViewMatrix();
-
+    // ...
 }
-
-
 
 void Application::OnFileChanged(const char* filename)
 {
     Shader::ReloadSingleShader(filename);
 }
-

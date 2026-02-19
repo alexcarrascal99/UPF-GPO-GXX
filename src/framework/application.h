@@ -9,6 +9,7 @@
 #include "image.h"
 #include "button.h"
 #include "entity.h"
+#include "shader.h"
 
 class ParticleSystem {
 public:
@@ -46,24 +47,19 @@ public:
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
 	bool fill_shapes = false;
-	enum scene {
-		SINGLE_ENTITY,
-		MULTIPLE_ENTITIES
+	enum Exercise {
+		EX1,
+		EX2,
+		EX3,
+		EX4	
 	};
 
-	enum property {
-		CAM_NEAR,
-		CAM_FAR,
-		FOV
-	};
+	Exercise current_exercise = EX1;
 
+	Mesh* mesh;
+	Shader* shader;
 
-
-	property current_property = CAM_NEAR;
-	scene current_scene = SINGLE_ENTITY;
-	bool use_texture = false;
-	
-
+	char current_subtask = 'a';
 
 	FloatImage z_buffer;
 
@@ -77,8 +73,6 @@ public:
 	bool dragging = false;
 	bool is_second_click = false;
 	bool is_painting = false;
-	bool use_zbuffer = true;
-	bool interpolated_color = true;
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	int borderWidth = 7;

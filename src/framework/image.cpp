@@ -18,7 +18,7 @@ Image::Image(unsigned int width, unsigned int height)
 {
 	this->width = width;
 	this->height = height;
-	pixels = new Color[width*height];
+	pixels = new Color[width * height];
 	memset(pixels, 0, width * height * sizeof(Color));
 }
 
@@ -29,34 +29,34 @@ Image::Image(const Image& c)
 	width = c.width;
 	height = c.height;
 	bytes_per_pixel = c.bytes_per_pixel;
-	if(c.pixels)
+	if (c.pixels)
 	{
-		pixels = new Color[width*height];
-		memcpy(pixels, c.pixels, width*height*bytes_per_pixel);
+		pixels = new Color[width * height];
+		memcpy(pixels, c.pixels, width * height * bytes_per_pixel);
 	}
 }
 
 // Assign operator
 Image& Image::operator = (const Image& c)
 {
-	if(pixels) delete[] pixels;
+	if (pixels) delete[] pixels;
 	pixels = NULL;
 
 	width = c.width;
 	height = c.height;
 	bytes_per_pixel = c.bytes_per_pixel;
 
-	if(c.pixels)
+	if (c.pixels)
 	{
-		pixels = new Color[width*height*bytes_per_pixel];
-		memcpy(pixels, c.pixels, width*height*bytes_per_pixel);
+		pixels = new Color[width * height * bytes_per_pixel];
+		memcpy(pixels, c.pixels, width * height * bytes_per_pixel);
 	}
 	return *this;
 }
 
 Image::~Image()
 {
-	if(pixels) 
+	if (pixels)
 		delete[] pixels;
 }
 
@@ -69,13 +69,13 @@ void Image::Render()
 // Change image size (the old one will remain in the top-left corner)
 void Image::Resize(unsigned int width, unsigned int height)
 {
-	Color* new_pixels = new Color[width*height];
+	Color* new_pixels = new Color[width * height];
 	unsigned int min_width = this->width > width ? width : this->width;
 	unsigned int min_height = this->height > height ? height : this->height;
 
-	for(unsigned int x = 0; x < min_width; ++x)
-		for(unsigned int y = 0; y < min_height; ++y)
-			new_pixels[ y * width + x ] = GetPixel(x,y);
+	for (unsigned int x = 0; x < min_width; ++x)
+		for (unsigned int y = 0; y < min_height; ++y)
+			new_pixels[y * width + x] = GetPixel(x, y);
 
 	delete[] pixels;
 	this->width = width;
@@ -86,11 +86,11 @@ void Image::Resize(unsigned int width, unsigned int height)
 // Change image size and scale the content
 void Image::Scale(unsigned int width, unsigned int height)
 {
-	Color* new_pixels = new Color[width*height];
+	Color* new_pixels = new Color[width * height];
 
-	for(unsigned int x = 0; x < width; ++x)
-		for(unsigned int y = 0; y < height; ++y)
-			new_pixels[ y * width + x ] = GetPixel((unsigned int)(this->width * (x / (float)width)), (unsigned int)(this->height * (y / (float)height)) );
+	for (unsigned int x = 0; x < width; ++x)
+		for (unsigned int y = 0; y < height; ++y)
+			new_pixels[y * width + x] = GetPixel((unsigned int)(this->width * (x / (float)width)), (unsigned int)(this->height * (y / (float)height)));
 
 	delete[] pixels;
 	this->width = width;
@@ -116,8 +116,8 @@ void Image::DrawImage(const Image& source, int x, int y) {
 void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
 
 {
-	float dx = (float)(x1) - (float)(x0);
-	float dy = (float)(y1) - (float)(y0);
+	float dx = (float)(x1)-(float)(x0);
+	float dy = (float)(y1)-(float)(y0);
 
 	float steps = std::max(std::abs(dx), std::abs(dy));
 
@@ -129,7 +129,7 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
 	float yIncrement = dy / steps;
 
 	float x = (float)x0;
-	float y = (float)y0; 
+	float y = (float)y0;
 
 	int i_steps = (int)steps;
 
@@ -189,7 +189,7 @@ void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table
 }
 
 void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor) {
-	
+
 	int minY = (std::min({ p0.y, p1.y, p2.y }));
 	int maxY = (std::max({ p0.y, p1.y, p2.y }));
 
@@ -219,7 +219,7 @@ void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2
 }
 
 
-void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, Image* texture, const Vector2& uv0, const Vector2& uv1, const Vector2& uv2){
+void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2, FloatImage* zbuffer, Image* texture, const Vector2& uv0, const Vector2& uv1, const Vector2& uv2) {
 
 	int minY = (int)std::min({ p0.y, p1.y, p2.y });
 	int maxY = (int)std::max({ p0.y, p1.y, p2.y });
@@ -228,9 +228,7 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 	if (maxY >= (int)height) maxY = (int)height - 1;
 	if (minY > maxY) return;
 
-	std::vector<Cell> AET(maxY+1);
-
-
+	std::vector<Cell> AET(maxY + 1);
 
 	ScanLineDDA((int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, AET);
 	ScanLineDDA((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, AET);
@@ -254,17 +252,12 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 
 			float u = ((p1.x - px) * (p2.y - py) - (p2.x - px) * (p1.y - py)) / area;
 			float v = ((p2.x - px) * (p0.y - py) - (p0.x - px) * (p2.y - py)) / area;
-			float w = 1.0f - u - v; 
-
+			float w = 1.0f - u - v;
 
 			float z = u * p0.z + v * p1.z + w * p2.z;
 
-			float zbuff_value = zbuffer->GetPixel(x, y);
-
-			if (z < zbuff_value|| zbuff_value < 0.0f) {
-				if (z < zbuff_value) {
-					zbuffer->SetPixel(x, y, z);
-				}
+			if (z < zbuffer->GetPixel(x, y)) {
+				zbuffer->SetPixel(x, y, z);
 				if (texture != nullptr) {
 					float tu = u * uv0.x + v * uv1.x + w * uv2.x;
 					float tv = u * uv0.y + v * uv1.y + w * uv2.y;
@@ -287,26 +280,23 @@ void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const
 					if (r < 0) r = 0; if (r > 255) r = 255;
 					if (g < 0) g = 0; if (g > 255) g = 255;
 					if (b < 0) b = 0; if (b > 255) b = 255;
+
 					SetPixel(x, y, Color(r, g, b));
 				}
 			}
-
 		}
-
 	}
 }
-			
-
 
 
 Image Image::GetArea(unsigned int start_x, unsigned int start_y, unsigned int width, unsigned int height)
 {
 	Image result(width, height);
-	for(unsigned int x = 0; x < width; ++x)
-		for(unsigned int y = 0; y < height; ++y)
+	for (unsigned int x = 0; x < width; ++x)
+		for (unsigned int y = 0; y < height; ++y)
 		{
-			if( (x + start_x) < this->width && (y + start_y) < this->height) 
-				result.SetPixelUnsafe( x, y, GetPixel(x + start_x,y + start_y) );
+			if ((x + start_x) < this->width && (y + start_y) < this->height)
+				result.SetPixelUnsafe(x, y, GetPixel(x + start_x, y + start_y));
 		}
 	return result;
 }
@@ -337,7 +327,7 @@ bool Image::LoadPNG(const char* filename, bool flip_y)
 	if (file.seekg(0, std::ios::end).good()) size = file.tellg();
 	if (file.seekg(0, std::ios::beg).good()) size -= file.tellg();
 
-	if (!size){
+	if (!size) {
 		std::cerr << "--- Failed to load file: " << sfullPath.c_str() << std::endl;
 		return false;
 	}
@@ -355,14 +345,14 @@ bool Image::LoadPNG(const char* filename, bool flip_y)
 
 	std::vector<unsigned char> out_image;
 
-	if (decodePNG(out_image, width, height, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size(), true) != 0){
+	if (decodePNG(out_image, width, height, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size(), true) != 0) {
 		std::cerr << "--- Failed to load file: " << sfullPath.c_str() << std::endl;
 		return false;
 	}
 
 	size_t bufferSize = out_image.size();
 	unsigned int originalBytesPerPixel = (unsigned int)bufferSize / (width * height);
-	
+
 	// Force 3 channels
 	bytes_per_pixel = 3;
 
@@ -396,16 +386,16 @@ bool Image::LoadPNG(const char* filename, bool flip_y)
 // Loads an image from a TGA file
 bool Image::LoadTGA(const char* filename, bool flip_y)
 {
-	unsigned char TGAheader[12] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	unsigned char TGAcompare[12];
 	unsigned char header[6];
 	unsigned int imageSize;
 	unsigned int bytesPerPixel;
 
-    std::string sfullPath = absResPath( filename );
+	std::string sfullPath = absResPath(filename);
 
-	FILE * file = fopen( sfullPath.c_str(), "rb");
-   	if ( file == NULL || fread(TGAcompare, 1, sizeof(TGAcompare), file) != sizeof(TGAcompare) ||
+	FILE* file = fopen(sfullPath.c_str(), "rb");
+	if (file == NULL || fread(TGAcompare, 1, sizeof(TGAcompare), file) != sizeof(TGAcompare) ||
 		memcmp(TGAheader, TGAcompare, sizeof(TGAheader)) != 0 ||
 		fread(header, 1, sizeof(header), file) != sizeof(header))
 	{
@@ -420,10 +410,10 @@ bool Image::LoadTGA(const char* filename, bool flip_y)
 	}
 
 	TGAInfo* tgainfo = new TGAInfo;
-    
+
 	tgainfo->width = header[1] * 256 + header[0];
 	tgainfo->height = header[3] * 256 + header[2];
-    
+
 	if (tgainfo->width <= 0 || tgainfo->height <= 0 || (header[4] != 24 && header[4] != 32))
 	{
 		std::cerr << "--- Failed to load file: " << sfullPath.c_str() << std::endl;
@@ -431,20 +421,20 @@ bool Image::LoadTGA(const char* filename, bool flip_y)
 		delete tgainfo;
 		return NULL;
 	}
-    
+
 	tgainfo->bpp = header[4];
 	bytesPerPixel = tgainfo->bpp / 8;
 	imageSize = tgainfo->width * tgainfo->height * bytesPerPixel;
-    
+
 	tgainfo->data = new unsigned char[imageSize];
-    
+
 	if (tgainfo->data == NULL || fread(tgainfo->data, 1, imageSize, file) != imageSize)
 	{
 		std::cerr << "--- Failed to load file: " << sfullPath.c_str() << std::endl;
 
 		if (tgainfo->data != NULL)
 			delete[] tgainfo->data;
-            
+
 		fclose(file);
 		delete tgainfo;
 		return false;
@@ -453,19 +443,19 @@ bool Image::LoadTGA(const char* filename, bool flip_y)
 	fclose(file);
 
 	// Save info in image
-	if(pixels)
+	if (pixels)
 		delete[] pixels;
 
 	width = tgainfo->width;
 	height = tgainfo->height;
-	pixels = new Color[width*height];
+	pixels = new Color[width * height];
 
 	// Convert to float all pixels
 	for (unsigned int y = 0; y < height; ++y) {
 		for (unsigned int x = 0; x < width; ++x) {
 			unsigned int pos = y * width * bytesPerPixel + x * bytesPerPixel;
 			// Make sure we don't access out of memory
-			if( (pos < imageSize) && (pos + 1 < imageSize) && (pos + 2 < imageSize))
+			if ((pos < imageSize) && (pos + 1 < imageSize) && (pos + 2 < imageSize))
 				SetPixelUnsafe(x, height - y - 1, Color(tgainfo->data[pos + 2], tgainfo->data[pos + 1], tgainfo->data[pos]));
 		}
 	}
@@ -485,11 +475,11 @@ bool Image::LoadTGA(const char* filename, bool flip_y)
 // Saves the image to a TGA file
 bool Image::SaveTGA(const char* filename)
 {
-	unsigned char TGAheader[12] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	std::string fullPath = absResPath(filename);
-	FILE *file = fopen(fullPath.c_str(), "wb");
-	if ( file == NULL )
+	FILE* file = fopen(fullPath.c_str(), "wb");
+	if (file == NULL)
 	{
 		std::cerr << "--- Failed to save file: " << fullPath.c_str() << std::endl;
 		return false;
@@ -506,18 +496,18 @@ bool Image::SaveTGA(const char* filename)
 	fwrite(header, 1, 6, file);
 
 	// Convert pixels to unsigned char
-	unsigned char* bytes = new unsigned char[width*height*3];
-	for(unsigned int y = 0; y < height; ++y)
-		for(unsigned int x = 0; x < width; ++x)
+	unsigned char* bytes = new unsigned char[width * height * 3];
+	for (unsigned int y = 0; y < height; ++y)
+		for (unsigned int x = 0; x < width; ++x)
 		{
-			Color c = pixels[y*width+x];
-			unsigned int pos = (y*width+x)*3;
-			bytes[pos+2] = c.r;
-			bytes[pos+1] = c.g;
+			Color c = pixels[y * width + x];
+			unsigned int pos = (y * width + x) * 3;
+			bytes[pos + 2] = c.r;
+			bytes[pos + 1] = c.g;
 			bytes[pos] = c.b;
 		}
 
-	fwrite(bytes, 1, width*height*3, file);
+	fwrite(bytes, 1, width * height * 3, file);
 	fclose(file);
 
 	delete[] bytes;
@@ -533,13 +523,13 @@ bool Image::SaveTGA(const char* filename)
 // ForEachPixel( img, img2, [](Color a, Color b) { return a + b; } );
 template <typename F>
 void ForEachPixel(Image& img, const Image& img2, F f) {
-	for(unsigned int pos = 0; pos < img.width * img.height; ++pos)
-		img.pixels[pos] = f( img.pixels[pos], img2.pixels[pos] );
+	for (unsigned int pos = 0; pos < img.width * img.height; ++pos)
+		img.pixels[pos] = f(img.pixels[pos], img2.pixels[pos]);
 }
 
 #endif
 
-FloatImage::FloatImage(unsigned int width, unsigned int height){
+FloatImage::FloatImage(unsigned int width, unsigned int height) {
 	this->width = width;
 	this->height = height;
 	pixels = new float[width * height];

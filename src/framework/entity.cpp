@@ -1,9 +1,10 @@
 ﻿#include "entity.h"
+#include "application.h"
+
 
 Entity::Entity() {
 	mesh = new Mesh();
 	mesh->LoadOBJ("meshes/lee.obj");
-	mode = NORMAL;
 	modelMatrix.SetIdentity();
 	texture = NULL;
 }
@@ -22,7 +23,7 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 
 
 		// Del espacio al mundo al espacio de la camara 
-		v0 = camera->ProjectVector(v0);	
+		v0 = camera->ProjectVector(v0);
 		v1 = camera->ProjectVector(v1);
 		v2 = camera->ProjectVector(v2);
 
@@ -41,37 +42,15 @@ void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer) {
 
 		v2.x = (v2.x + 1) * 0.5f * framebuffer->width;
 		v2.y = (v2.y + 1) * 0.5f * framebuffer->height;
-	
 
 
 
-		if (this->render_mode == WIREFRAME) {
-			framebuffer->DrawLineDDA(v0.x, v0.y, v1.x, v1.y, Color::WHITE);
-			framebuffer->DrawLineDDA(v1.x, v1.y, v2.x, v2.y, Color::WHITE);
-			framebuffer->DrawLineDDA(v2.x, v2.y, v0.x, v0.y, Color::WHITE);
-		}
-		else if (this->render_mode == POINTCLOUD) {
-			framebuffer->SetPixel((unsigned int)v0.x, (unsigned int)v0.y, Color::WHITE);
-			framebuffer->SetPixel((unsigned int)v1.x, (unsigned int)v1.y, Color::WHITE);
-			framebuffer->SetPixel((unsigned int)v2.x, (unsigned int)v2.y, Color::WHITE);
-				
-		}
-		else if (this->render_mode == TRIANGLES) {
-			Vector2 p0(v0.x, v0.y);
-			Vector2 p1(v1.x, v1.y);
-			Vector2 p2(v2.x, v2.y);
-			framebuffer->DrawTriangle(p0, p1, p2, Color::WHITE, true, Color::WHITE);
-		}
-		else if (this->render_mode == TRIANGLES_INTERPOLATED) {
-			Vector3 p0(v0.x, v0.y, v0.z);
-			Vector3 p1(v1.x, v1.y, v1.z);
-			Vector3 p2(v2.x, v2.y, v2.z);
 
-			Vector2 uv0 = mesh->GetUVs()[i];
-			Vector2 uv1 = mesh->GetUVs()[i + 1];
-			Vector2 uv2 = mesh->GetUVs()[i + 2];
-			framebuffer->DrawTriangleInterpolated(p0, p1, p2, Color::RED, Color::GREEN, Color::BLUE, zBuffer, texture,  uv0, uv1, uv2);
-		}
+		
+		framebuffer->DrawLineDDA(v0.x, v0.y, v1.x, v1.y, Color::WHITE);
+		framebuffer->DrawLineDDA(v1.x, v1.y, v2.x, v2.y, Color::WHITE);
+		framebuffer->DrawLineDDA(v2.x, v2.y, v0.x, v0.y, Color::WHITE);
+
 	}
 }
 
@@ -84,40 +63,5 @@ void Entity::Translate(float x, float y, float z)
 }
 void Entity::Update(float seconds)
 {
-	static float t = 0.0f;  
-	t += seconds;
-
-	if (this->mode == NORMAL) {
-		return;
-	}
-
-	if (this->mode == ROTATE) {
-
-		Matrix44 R;
-		R.MakeRotationMatrix(seconds * 0.8f, Vector3(0, 1, 0));
-
-		Matrix44 T;
-		T.MakeTranslationMatrix(sin(t * 5.0f) * 0.01f, 0, 0);
-
-		modelMatrix = modelMatrix * R * T;
-	}
-
-	else if (this->mode == TRANSLATE) {
-
-		Matrix44 T;
-		T.MakeTranslationMatrix(0, (sin(t * 5.0f) * 0.02f), 0);
-
-		modelMatrix = modelMatrix * T;
-	}
-
-	else if (this->mode == SCALE) {
-
-		float s = 1.0f + sin(t * 6.0f) * 0.01f;
-
-		Matrix44 S;
-		S.MakeScaleMatrix(s, s, s);
-		Matrix44 T;
-		T.MakeTranslationMatrix(0, (sin(t*5.0f)*0.01f), 0);
-		modelMatrix = modelMatrix * S * T;
-	}
+	
 }

@@ -1,4 +1,4 @@
-/*
+/*/*
 	+ This file defines the class Image that allows to manipulate images.
 	+ It defines all the need operators for Color and Image
 */
@@ -32,7 +32,7 @@ class Image
 	} TGAInfo;
 
 	typedef struct Cell {
-		int minX; 
+		int minX;
 		int maxX;
 		Cell() : minX(INT_MAX), maxX(INT_MIN) {}
 	} Cell;
@@ -56,17 +56,17 @@ public:
 	void Render();
 
 	// Get the pixel at position x,y
-	Color GetPixel(unsigned int x, unsigned int y) const { return pixels[ y * width + x ]; }
-	Color& GetPixelRef(unsigned int x, unsigned int y)	{ return pixels[ y * width + x ]; }
-	Color GetPixelSafe(unsigned int x, unsigned int y) const {	
-		x = clamp((unsigned int)x, 0, width-1); 
-		y = clamp((unsigned int)y, 0, height-1); 
-		return pixels[ y * width + x ]; 
+	Color GetPixel(unsigned int x, unsigned int y) const { return pixels[y * width + x]; }
+	Color& GetPixelRef(unsigned int x, unsigned int y) { return pixels[y * width + x]; }
+	Color GetPixelSafe(unsigned int x, unsigned int y) const {
+		x = clamp((unsigned int)x, 0, width - 1);
+		y = clamp((unsigned int)y, 0, height - 1);
+		return pixels[y * width + x];
 	}
 
 	// Set the pixel at position x,y with value C
-	void SetPixel(unsigned int x, unsigned int y, const Color& c) { if(x < 0 || x > width-1) return; if(y < 0 || y > height-1) return; pixels[ y * width + x ] = c; }
-	inline void SetPixelUnsafe(unsigned int x, unsigned int y, const Color& c) { pixels[ y * width + x ] = c; }
+	void SetPixel(unsigned int x, unsigned int y, const Color& c) { if (x < 0 || x > width - 1) return; if (y < 0 || y > height - 1) return; pixels[y * width + x] = c; }
+	inline void SetPixelUnsafe(unsigned int x, unsigned int y, const Color& c) { pixels[y * width + x] = c; }
 
 	void Resize(unsigned int width, unsigned int height);
 	void Scale(unsigned int width, unsigned int height);
@@ -81,7 +81,7 @@ public:
 	void FlipY(); // Flip the image upside-down
 
 	// Fill the image with the color C
-	void Fill(const Color& c) { for(unsigned int pos = 0; pos < width*height; ++pos) pixels[pos] = c; }
+	void Fill(const Color& c) { for (unsigned int pos = 0; pos < width * height; ++pos) pixels[pos] = c; }
 
 	// Returns a new image with the area from (startx,starty) of size width,height
 	Image GetArea(unsigned int start_x, unsigned int start_y, unsigned int width, unsigned int height);
@@ -92,22 +92,22 @@ public:
 	bool SaveTGA(const char* filename);
 
 	// Used to easy code
-	#ifndef IGNORE_LAMBDAS
+#ifndef IGNORE_LAMBDAS
 
-	// Applies an algorithm to every pixel in an image
-	// you can use lambda sintax:   img.forEachPixel( [](Color c) { return c*2; });
-	// or callback sintax:   img.forEachPixel( mycallback ); //the callback has to be Color mycallback(Color c) { ... }
+// Applies an algorithm to every pixel in an image
+// you can use lambda sintax:   img.forEachPixel( [](Color c) { return c*2; });
+// or callback sintax:   img.forEachPixel( mycallback ); //the callback has to be Color mycallback(Color c) { ... }
 	template <typename F>
-	Image& ForEachPixel( F callback )
+	Image& ForEachPixel(F callback)
 	{
-		for(unsigned int pos = 0; pos < width*height; ++pos)
+		for (unsigned int pos = 0; pos < width * height; ++pos)
 			pixels[pos] = callback(pixels[pos]);
 		return *this;
 	}
-	#endif
+#endif
 
 
-	struct sTriangleInfo{
+	struct sTriangleInfo {
 		Vector3 p0, p1, p2;
 		Color c0, c1, c2;
 		Vector2 uv0, uv1, uv2;

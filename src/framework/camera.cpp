@@ -111,23 +111,23 @@ void Camera::UpdateViewMatrix()
 	rotation.SetIdentity();
 	rotation.M[0][0] = side.x;
 	rotation.M[1][0] = side.y;
-	rotation.M[2][0] = side.z; 
+	rotation.M[2][0] = side.z;
 
 	rotation.M[0][1] = cameraUp.x;
-	rotation.M[1][1] = cameraUp.y; 
-	rotation.M[2][1] = cameraUp.z; 
-	
-	rotation.M[0][2] = -forward.x; 
-	rotation.M[1][2] = -forward.y; 
-	rotation.M[2][2] = -forward.z; 
-	
+	rotation.M[1][1] = cameraUp.y;
+	rotation.M[2][1] = cameraUp.z;
+
+	rotation.M[0][2] = -forward.x;
+	rotation.M[1][2] = -forward.y;
+	rotation.M[2][2] = -forward.z;
+
 	Matrix44 translation;
 	translation.SetIdentity();
 
-	translation.M[3][0] = -eye.x; 
-	translation.M[3][1] = -eye.y; 
+	translation.M[3][0] = -eye.x;
+	translation.M[3][1] = -eye.y;
 	translation.M[3][2] = -eye.z;
-	
+
 	view_matrix = rotation * translation;
 
 
@@ -147,7 +147,7 @@ void Camera::UpdateProjectionMatrix()
 
 	// Remember how to fill a Matrix4x4 (check framework slides)
 
-	if (type == PERSPECTIVE){
+	if (type == PERSPECTIVE) {
 		float f = 1.0f / tan(fov * 0.5f * DEG2RAD);
 		projection_matrix.SetIdentity();
 
