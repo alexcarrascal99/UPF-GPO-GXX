@@ -2,9 +2,11 @@ varying vec2 v_uv;
 uniform float u_aspect;
 uniform int u_exercise; 
 uniform int u_subtask;  
+uniform sampler2D u_texture;
 
 void main()
 {
+    vec2 uv_tex = v_uv;
     vec2 uv = v_uv;
     uv.x *= u_aspect;
     
@@ -47,10 +49,10 @@ void main()
 		else if (u_subtask == 5) {
 			float grad = smoothstep(0.0, 1.0, uv.y);
 
-			vec3 verdeFondo = vec3(0.0, 0.25, 0.0);
+			vec3 verdeFondo = vec3(0.0, 0.15, 0);
 			vec3 verdeOnda  = vec3(0.0, 0.9, 0.0);
 
-			verdeFondo *= grad;
+			verdeFondo /= grad;
 			verdeOnda  *= grad;
 
 			float amplitud = 0.22;
@@ -62,11 +64,27 @@ void main()
 
 			color = mix(verdeFondo, verdeOnda, mascara);
 		}
+        gl_FragColor = vec4(color, 1.0);
 	}
-    else if (u_exercise == 1) 
-    {
-		color = vec3(0.0); 
-    }
+else if (u_exercise == 1) 
+{
+    vec3 tex = texture2D(u_texture, uv_tex).rgb;
+        if (u_subtask == 0) {
+            float gray = dot(tex, vec3(0.299, 0.587, 0.114));
+            color = vec3(gray);
+        }   
+        else if (u_subtask == 1) {
+            color = 1.0 - tex;
+        }
+        else if (u_subtask == 2) {
+            vec3 yellow = vec3(1,1,0.0);
+            float gray = dot(tex, vec3(0.299, 0.587, 0.114));
+            color = vec3(gray) * yellow;
+        }
+        else if (u_subtask == 3) {
+            color = tex * (uv.x * uv.y);
+        }
 
-    gl_FragColor = vec4(color, 1.0);
+        gl_FragColor = vec4(color, 1.0);
+}
 }

@@ -83,7 +83,7 @@ public:
 	int triangle_click_counter = 0;
 	Entity* entity[3];
 	Camera* camera;
-	Image* texture;
+	Texture* texture;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);

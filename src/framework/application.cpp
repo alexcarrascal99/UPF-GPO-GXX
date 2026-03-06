@@ -18,6 +18,7 @@ Application::Application(const char* caption, int width, int height)
     this->framebuffer.Resize(w, h);
     this->camera = new Camera(); 
     this->current_exercise = EX1;
+	this->current_subtask = 0;
     this->shader = nullptr;
     this->mesh = nullptr;
 }
@@ -32,9 +33,8 @@ void Application::Init(void)
     mesh = new Mesh();
     mesh->CreateQuad();
 
-    // Prueba con la ruta que creas más lógica
-   
     shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
+	texture = Texture::Get("../res/images/fruits.png");
 }
 
 // Render one frame
@@ -45,6 +45,7 @@ void Application::Render(void)
     float aspect = (float)window_width / (float)window_height;
 
     shader->Enable();
+	shader->SetTexture("u_texture", texture);
 
     shader->SetUniform1("u_aspect", aspect);
     shader->SetUniform1("u_exercise", (int)current_exercise); // Enviamos 1, 2, 3 o 4
@@ -73,7 +74,6 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_3: current_exercise = EX3; break;
     case SDLK_4: current_exercise = EX4; break;
 
-        // Selección de Subtarea (se aplica al ejercicio que esté activo)
     case SDLK_a: current_subtask = 0; break;
     case SDLK_b: current_subtask = 1; break;
     case SDLK_c: current_subtask = 2; break;
