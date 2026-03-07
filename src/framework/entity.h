@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include "camera.h"
 #include "image.h"
+#include "shader.h"
 #include "texture.h"
 
 
@@ -15,7 +16,8 @@ public:
 
 	Mesh* mesh;
 	Matrix44 modelMatrix;
-	Image* texture;
+	Texture* texture;
+	Shader* shader;
 
 
 
@@ -23,5 +25,6 @@ public:
 	void Entity::Render(Image* framebuffer, Camera* camera, FloatImage* zBuffer);
 	void Entity::Translate(float x, float y, float z);
 	void Entity::Update(float seconds);
+	void Entity::Render(Camera* camera);
 
 };

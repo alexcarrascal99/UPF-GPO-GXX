@@ -58,6 +58,7 @@ public:
 
 	Mesh* mesh;
 	Shader* shader;
+	Shader* raster_shader;
 
 	char current_subtask = 'a';
 

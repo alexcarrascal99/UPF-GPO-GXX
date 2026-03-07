@@ -29,12 +29,18 @@ Application::~Application()
 
 void Application::Init(void)
 {
-    std::cout << "Cargando Shaders..." << std::endl;
+    float aspect = (float)window_width / (float)window_height;
+    camera->LookAt(Vector3(0, 0, 2.0f), Vector3(0, 0.2f, 0), Vector3(0, 1, 0));
+    camera->SetPerspective(45, aspect, 0.05f, 3.0f);
+
     mesh = new Mesh();
     mesh->CreateQuad();
-
+	entity[0] = new Entity();
     shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
+    raster_shader = Shader::Get("../res/shaders/raster.vs", "../res/shaders/raster.fs");
 	texture = Texture::Get("../res/images/fruits.png");
+	entity[0]->texture = Texture::Get("../res/textures/lee_color_specular.tga");
+    entity[0]->shader = raster_shader;
 }
 
 // Render one frame
@@ -42,22 +48,30 @@ void Application::Render(void)
 {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     float aspect = (float)window_width / (float)window_height;
 
-    shader->Enable();
-	shader->SetTexture("u_texture", texture);
+ 
+    if (current_exercise == EX4) {
+        entity[0]->Render(camera);
+    }
+    else {
+        shader->Enable();
+        shader->SetTexture("u_texture", texture);
+        shader->SetUniform1("u_aspect", aspect);
+        shader->SetUniform1("u_exercise", (int)current_exercise);
+        shader->SetFloat("u_time", time);
+        shader->SetUniform1("u_subtask", current_subtask);
+        mesh->Render();
+        shader->Disable();
+    }
 
-    shader->SetUniform1("u_aspect", aspect);
-    shader->SetUniform1("u_exercise", (int)current_exercise); // Enviamos 1, 2, 3 o 4
-    shader->SetUniform1("u_subtask", current_subtask);        // Enviamos 0, 1, 2...
-
-    mesh->Render();
-    shader->Disable();
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
+	time += seconds_elapsed;
 
 
 }

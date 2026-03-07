@@ -6,7 +6,8 @@ Entity::Entity() {
 	mesh = new Mesh();
 	mesh->LoadOBJ("meshes/lee.obj");
 	modelMatrix.SetIdentity();
-	texture = NULL;
+	texture = new Texture();
+	shader = new Shader();
 }
 
 
@@ -64,4 +65,16 @@ void Entity::Translate(float x, float y, float z)
 void Entity::Update(float seconds)
 {
 	
+}
+
+void Entity::Render(Camera* camera)
+{
+	shader->Enable();
+
+	shader->SetMatrix44("u_model", modelMatrix);
+	shader->SetMatrix44("u_viewprojection", camera->viewprojection_matrix);
+	shader->SetTexture("u_texture", texture);
+
+	mesh->Render();
+	shader->Disable();
 }
