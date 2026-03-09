@@ -4,6 +4,7 @@
 #include "image.h"
 #include "shader.h"
 #include "texture.h"
+#include "material.h"
 
 
 class Entity {
@@ -18,6 +19,7 @@ public:
 	Matrix44 modelMatrix;
 	Texture* texture;
 	Shader* shader;
+	Material* material;
 
 
 
@@ -26,5 +28,6 @@ public:
 	void Entity::Translate(float x, float y, float z);
 	void Entity::Update(float seconds);
 	void Entity::Render(Camera* camera);
+	void Entity::Render(sUniformData& uniform_data);
 
 };

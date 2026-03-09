@@ -59,6 +59,12 @@ public:
 	Mesh* mesh;
 	Shader* shader;
 	Shader* raster_shader;
+	Shader* phong_shader;
+	Shader* gouraud_shader;
+	
+	Shader* current_shader = nullptr;
+
+	sUniformData uniformdata;
 
 	char current_subtask = 'a';
 

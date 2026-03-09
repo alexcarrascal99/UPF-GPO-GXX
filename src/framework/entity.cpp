@@ -8,6 +8,7 @@ Entity::Entity() {
 	modelMatrix.SetIdentity();
 	texture = new Texture();
 	shader = new Shader();
+	material = new Material();
 }
 
 
@@ -77,4 +78,13 @@ void Entity::Render(Camera* camera)
 
 	mesh->Render();
 	shader->Disable();
+}
+
+void Entity::Render(sUniformData& uniform_data)
+{
+	uniform_data.model = modelMatrix;
+
+	material->Enable(uniform_data);
+	mesh->Render();
+	material->Disable();
 }

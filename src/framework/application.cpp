@@ -35,13 +35,28 @@ void Application::Init(void)
 
     mesh = new Mesh();
     mesh->CreateQuad();
-	entity[0] = new Entity();
     shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
     raster_shader = Shader::Get("../res/shaders/raster.vs", "../res/shaders/raster.fs");
 	texture = Texture::Get("../res/images/fruits.png");
-	entity[0]->texture = Texture::Get("../res/textures/lee_color_specular.tga");
-    entity[0]->shader = raster_shader;
+
+   gouraud_shader = Shader::Get("../res/shaders/gourand.vs", "../res/shaders/gourand.fs");
+   phong_shader = Shader::Get("../res/shaders/phong.vs", "../res/shaders/phong.fs");
+   current_shader = gouraud_shader;
+
+
+    entity[0] = new Entity();
+    entity[0]->material->shader = raster_shader;
+    entity[0]->material->color_texture = Texture::Get("../res/textures/lee_color_specular.tga");
+    entity[0]->material->normal_texture = Texture::Get("../res/textures/lee_normal.tga");
+
+
+    uniformdata.ambient_light = Vector3(0.2f, 0.2f, 0.2f);
+
+    uniformdata.light.position = Vector3(2.0f, 2.0f, 2.0f);
+    uniformdata.light.color = Vector3(1.0f, 1.0f, 1.0f);
 }
+
+
 
 // Render one frame
 void Application::Render(void)
@@ -53,7 +68,10 @@ void Application::Render(void)
 
  
     if (current_exercise == EX4) {
-        entity[0]->Render(camera);
+        uniformdata.viewprojection = camera->viewprojection_matrix;
+        uniformdata.camera_position = camera->eye;
+		entity[0]->material->shader = current_shader;
+        entity[0]->Render(uniformdata);
     }
     else {
         shader->Enable();
@@ -94,6 +112,9 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     case SDLK_d: current_subtask = 3; break;
     case SDLK_e: current_subtask = 4; break;
     case SDLK_f: current_subtask = 5; break;
+
+	case SDLK_g: current_shader = gouraud_shader; break;
+	case SDLK_p: current_shader = phong_shader; break;
     }
 }
 
