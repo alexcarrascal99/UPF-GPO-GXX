@@ -49,6 +49,28 @@ void Application::Init(void)
     entity[0]->material->color_texture = Texture::Get("../res/textures/lee_color_specular.tga");
     entity[0]->material->normal_texture = Texture::Get("../res/textures/lee_normal.tga");
 
+    lights.clear();
+
+    sLight light1;
+    light1.position = Vector3(-3.0f, 3.0f, 3.0f);   // izquierda arriba
+    light1.color = Vector3(1.0f, 1.0f, 1.0f);
+
+    sLight light2;
+    light2.position = Vector3(3.0f, -3.0f, 3.0f);   // derecha abajo
+    light2.color = Vector3(1.0f, 1.0f, 1.0f);
+
+    sLight light3;
+    light3.position = Vector3(0.0f, 4.0f, 3.0f);
+    light3.color = Vector3(0.0f, 1.0f, 0.0f);
+
+    sLight light4;
+    light4.position = Vector3(0.0f, -4.0f, 3.0f);
+    light4.color = Vector3(0.0f, 0.0f, 1.0f);
+
+    lights.push_back(light1);
+    lights.push_back(light2);
+    lights.push_back(light3);
+    lights.push_back(light4);
 
     uniformdata.ambient_light = Vector3(0.2f, 0.2f, 0.2f);
 
@@ -67,11 +89,55 @@ void Application::Render(void)
     float aspect = (float)window_width / (float)window_height;
 
  
-    if (current_exercise == EX4) {
+    if (lab5_scene) {
+        uniformdata.use_color_texture = use_color_texture;
+        uniformdata.use_specular_texture = use_specular_texture;
+        uniformdata.use_normal_texture = use_normal_texture;
         uniformdata.viewprojection = camera->viewprojection_matrix;
         uniformdata.camera_position = camera->eye;
 		entity[0]->material->shader = current_shader;
-        entity[0]->Render(uniformdata);
+        if (current_shader == phong_shader)
+        {
+            int num_lights = active_lights;
+            if (num_lights > lights.size())
+                num_lights = lights.size();
+
+            for (int i = 0; i < num_lights; ++i)
+            {
+                uniformdata.light = lights[i];
+                uniformdata.first_pass = (i == 0);
+
+                if (i == 0)
+                {
+                    glDisable(GL_BLEND);
+                    glDepthMask(GL_TRUE);
+                    glDepthFunc(GL_LESS);
+                }
+                else
+                {
+                    glEnable(GL_BLEND);
+                    glBlendFunc(GL_ONE, GL_ONE);
+                    glDepthMask(GL_FALSE);
+                    glDepthFunc(GL_EQUAL);
+                }
+
+                entity[0]->Render(uniformdata);
+            }
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            glDepthFunc(GL_LESS);
+		}
+		else {
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            glDepthFunc(GL_LESS);
+
+            if (!lights.empty())
+                uniformdata.light = lights[0];
+
+            uniformdata.first_pass = true;
+            entity[0]->Render(uniformdata);
+		}
     }
     else {
         shader->Enable();
@@ -98,23 +164,74 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
     float aspect = (float)window_width / (float)window_height;
 
     // KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
-    switch (event.keysym.sym) {
-    case SDLK_ESCAPE: exit(0); break;
+    switch (event.keysym.sym)
+    {
+    case SDLK_ESCAPE:
+        exit(0);
+        break;
 
-    case SDLK_1: current_exercise = EX1; break;
-    case SDLK_2: current_exercise = EX2; break;
-    case SDLK_3: current_exercise = EX3; break;
-    case SDLK_4: current_exercise = EX4; break;
+    case SDLK_l:
+        lab5_scene = !lab5_scene;
+        return;
 
-    case SDLK_a: current_subtask = 0; break;
-    case SDLK_b: current_subtask = 1; break;
-    case SDLK_c: current_subtask = 2; break;
-    case SDLK_d: current_subtask = 3; break;
-    case SDLK_e: current_subtask = 4; break;
-    case SDLK_f: current_subtask = 5; break;
+    case SDLK_g:
+        current_shader = gouraud_shader;
+        return;
 
-	case SDLK_g: current_shader = gouraud_shader; break;
-	case SDLK_p: current_shader = phong_shader; break;
+    case SDLK_p:
+        current_shader = phong_shader;
+        return;
+    }
+
+    if (!lab5_scene)
+    {
+        switch (event.keysym.sym)
+        {
+        case SDLK_1: current_exercise = EX1; break;
+        case SDLK_2: current_exercise = EX2; break;
+        case SDLK_3: current_exercise = EX3; break;
+        case SDLK_4: current_exercise = EX4; break;
+
+        case SDLK_a: current_subtask = 0; break;
+        case SDLK_b: current_subtask = 1; break;
+        case SDLK_c: current_subtask = 2; break;
+        case SDLK_d: current_subtask = 3; break;
+        case SDLK_e: current_subtask = 4; break;
+        case SDLK_f: current_subtask = 5; break;
+        }
+    }
+    else
+    {
+        switch (event.keysym.sym)
+        {
+        case SDLK_c:
+            use_color_texture = !use_color_texture;
+            break;
+
+        case SDLK_s:
+            use_specular_texture = !use_specular_texture;
+            break;
+
+        case SDLK_n:
+            use_normal_texture = !use_normal_texture;
+            break;
+
+        case SDLK_1:
+            active_lights = 1;
+            break;
+
+        case SDLK_2:
+            active_lights = 2;
+            break;
+
+        case SDLK_3:
+            active_lights = 3;
+            break;
+
+        case SDLK_4:
+            active_lights = 4;
+            break;
+        }
     }
 }
 
@@ -133,7 +250,6 @@ void Application::OnMouseButtonDown(SDL_MouseButtonEvent event)
     dragging = true;
     last_mouse_x = event.x;
     last_mouse_y = event.y;
-    // Aquí puedes añadir la lógica que desees para el evento de mouse down
 }
 
 void Application::OnMouseButtonUp(SDL_MouseButtonEvent event)

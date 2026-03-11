@@ -21,6 +21,11 @@ struct sUniformData
     Vector3 ambient_light;
 
     sLight light;
+
+    bool first_pass;
+    bool use_color_texture;
+    bool use_specular_texture;
+    bool use_normal_texture;
 };
 
 class Material

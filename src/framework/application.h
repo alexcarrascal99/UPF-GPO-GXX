@@ -76,13 +76,21 @@ public:
 	float yaw = 0.0f;
 	float pitch = 0.0f;
 	float distance = 0.0f;
-
+	std::vector<sLight> lights;
 	bool dragging = false;
 	bool is_second_click = false;
 	bool is_painting = false;
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	int borderWidth = 7;
+
+	bool lab5_scene = false;
+
+	bool use_color_texture = true;
+	bool use_specular_texture = true;
+	bool use_normal_texture = true;
+
+	int active_lights = 2;
 
 
 	Button all_buttons[16];

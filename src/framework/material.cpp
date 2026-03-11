@@ -46,14 +46,18 @@ void Material::Enable(const sUniformData& uniform_data)
     shader->SetUniform4("u_material_specular",
         specular.x, specular.y, specular.z, specular.w);
 
-
+    shader->SetUniform1("u_first_pass", uniform_data.first_pass);
     shader->SetFloat("u_shininess", shininess);
+    shader->SetUniform1("u_first_pass", uniform_data.first_pass ? 1 : 0);
+    shader->SetUniform1("u_use_color_texture", uniform_data.use_color_texture ? 1 : 0);
+    shader->SetUniform1("u_use_specular_texture", uniform_data.use_specular_texture ? 1 : 0);
+    shader->SetUniform1("u_use_normal_texture", uniform_data.use_normal_texture ? 1 : 0);
 
     if (color_texture)
         shader->SetTexture("u_color_texture", color_texture);
 
     if (normal_texture)
-        shader->SetTexture("u_normal_texture", normal_texture);
+        shader->SetTexture("u_normal_texture", normal_texture); 
 }
 
 void Material::Disable()
